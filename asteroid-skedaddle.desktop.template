@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Categories=Applications;
+Exec=asteroid-skedaddle
+Icon=ios-run
+X-Asteroid-Center-Color=#181f54
+X-Asteroid-Outer-Color=#031cfc
