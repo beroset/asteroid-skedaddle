@@ -34,15 +34,37 @@ Application {
         defaultValue: false
     }
 
-    Timer {
-        interval: 1000
-        repeat: true
-        running: true
-        triggeredOnStart: true
-        onTriggered: {
-            locationDBus.update()
-            if (isPlaying) {
-                gpxlog.logGPXsegment()
+    Component { 
+        id: configLayer;
+        ColumnLayout {
+            Label { 
+                text: "Speech" 
+                horizontalAlignment: Text.AlignHCenter
+                Layout.preferredWidth: parent.width
+            }
+            CircularSpinner {
+                Layout.preferredHeight: parent.height * 0.4
+                Layout.preferredWidth: parent.width
+                model: 3
+                delegate: 
+                SpinnerDelegate {
+                    id: miles
+                    text: [ "off", "half ", "" ][index] + (
+index == 0 ? "" : useMiles ? "mile" : "kilometer")
+                }
+            }
+            LabeledSwitch {
+                Layout.preferredHeight: parent.height * 0.2
+                //: Use miles instead of kilometers as unit
+                //% "Use miles"
+                text: qsTrId("id-use-miles")
+                onCheckedChanged: {
+                    if (checked) {
+                        useMiles = true
+                    } else {
+                        useMiles = false
+                    }
+                }
             }
         }
     }
@@ -260,21 +282,35 @@ Application {
                     distance.text = formatDistance(km)
                     if (km >= nextSpokenUpdate) {
                         const pace = ""
-                        var speakmsg = [ qsTr("Distance:") ]
+                        //: Spoken word for distance
+                        //% "Distance:"
+                        var speakmsg = [ qsTrId("id-distance") ]
                         if (half) {
-                            speakmsg.push(qsTr("%1 kilometers","fractional distance").arg(nextSpokenUpdate))
+                            //: fractional distance
+                            //% "%1 kilometers"
+                            speakmsg.push(qsTrId("id-frac-distance").arg(nextSpokenUpdate))
                         } else {
-                            speakmsg.push(qsTr("%n kilometer(s)","integer distance", parseInt(nextSpokenUpdate)))
+                            //: integer distance
+                            //% "%n kilometer(s)"
+                            speakmsg.push(qsTrId("id-int-distance", parseInt(nextSpokenUpdate)))
                         }
-                        speakmsg.push(qsTr("Time:"))
+                        //: Spoken word for an elapsed time
+                        //% "Time:"
+                        speakmsg.push(qsTrId("id-time"))
                         const [hours, minutes, seconds, tenths] = extractUnits(elapsed);
                         if (hours > 0) {
-                            speakmsg.push(qsTr("%n hour(s)", "", parseInt(hours)))
+                            //: Spoken elapsed hour(s)
+                            //% "%n hour(s)"
+                            speakmsg.push(qsTrId("id-hours", parseInt(hours)))
                         }
                         if (minutes > 0) {
-                            speakmsg.push(qsTr("%n minute(s)", "", parseInt(minutes)))
+                            //: Spoken elapsed minute(s)
+                            //% "%n minute(s)"
+                            speakmsg.push(qsTrId("id-minutes", parseInt(minutes)))
                         }
-                        speakmsg.push(qsTr("%n second(s)", "", parseInt(seconds)))
+                        //: Spoken elapsed seconds(s)
+                        //% "%n second(s)"
+                        speakmsg.push(qsTrId("id-second", parseInt(seconds)))
                         speak(speakmsg.join(" "));
 
                         nextSpokenUpdate += 0.5
