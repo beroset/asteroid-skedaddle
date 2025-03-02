@@ -5,14 +5,12 @@ project(asteroid-skedaddle
 	DESCRIPTION "Runner's tracking app for AsteroidOS"
         )
 
-find_package(ECM REQUIRED NO_MODULE)
 find_package(AsteroidApp REQUIRED)
 
-set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ASTEROID_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${ASTEROID_MODULE_PATH})
 
 include(FeatureSummary)
 include(GNUInstallDirs)
-include(ECMFindQmlModule)
 include(AsteroidCMakeSettings)
 include(AsteroidTranslations)
 
@@ -25,6 +23,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/runscript.in
 install(PROGRAMS ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}
 	DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+build_translations(i18n)
 generate_desktop(${CMAKE_SOURCE_DIR} ${CMAKE_PROJECT_NAME})
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
