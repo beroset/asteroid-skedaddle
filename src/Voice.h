@@ -14,12 +14,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef VOICE_H
+#define VOICE_H
+#include <espeak/speak_lib.h>
+#include <QObject>
+#include <QString>
+#include <QQmlEngine>
 
-#include <asteroidapp.h>
-#include "Voice.h"
-
-int main(int argc, char *argv[])
-{
-    qmlRegisterType<Voice>("org.asteroid.voice", 1, 0, "Voice");
-    return AsteroidApp::main(argc, argv);
-}
+class Voice : public QObject{
+    Q_OBJECT
+    Q_PROPERTY(QString libVersion READ libVersion)
+public:
+    explicit Voice(QObject *parent = nullptr);
+    ~Voice();
+public slots:
+    [[nodiscard]] QString libVersion() const;
+    Q_INVOKABLE void setProperties(QString languages, int gender=0, int variant=0, int age=0);
+    Q_INVOKABLE void say(QString message);
+private:
+    espeak_VOICE voice;
+};
+#endif // VOICE_H

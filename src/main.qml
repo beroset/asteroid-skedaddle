@@ -21,6 +21,7 @@ import QtPositioning 5.15
 import Nemo.Configuration 1.0
 import Nemo.DBus 2.0
 import org.asteroid.controls 1.0
+import org.asteroid.voice 1.0
 
 Application {
     id: app
@@ -34,37 +35,19 @@ Application {
         defaultValue: false
     }
 
-    Component { 
-        id: configLayer;
-        ColumnLayout {
-            Label { 
-                text: "Speech" 
-                horizontalAlignment: Text.AlignHCenter
-                Layout.preferredWidth: parent.width
-            }
-            CircularSpinner {
-                Layout.preferredHeight: parent.height * 0.4
-                Layout.preferredWidth: parent.width
-                model: 3
-                delegate: 
-                SpinnerDelegate {
-                    id: miles
-                    text: [ "off", "half ", "" ][index] + (
-index == 0 ? "" : useMiles ? "mile" : "kilometer")
-                }
-            }
-            LabeledSwitch {
-                Layout.preferredHeight: parent.height * 0.2
-                //: Use miles instead of kilometers as unit
-                //% "Use miles"
-                text: qsTrId("id-use-miles")
-                onCheckedChanged: {
-                    if (checked) {
-                        useMiles = true
-                    } else {
-                        useMiles = false
-                    }
-                }
+    Voice {
+        id: voce
+    }
+
+    Timer {
+        interval: 1000
+        repeat: true
+        running: true
+        triggeredOnStart: true
+        onTriggered: {
+            locationDBus.update()
+            if (isPlaying) {
+                gpxlog.logGPXsegment()
             }
         }
     }
@@ -167,6 +150,7 @@ index == 0 ? "" : useMiles ? "mile" : "kilometer")
 
     function speak(message) {
         console.log("SAYING:", message)
+        voce.say(message)
     }
 
     function formatDistance(kilometers) {
@@ -225,6 +209,10 @@ index == 0 ? "" : useMiles ? "mile" : "kilometer")
                                 startTime = new Date().getTime()
                                 km = 0
                                 gpxlog.openGPX()
+                                console.log("Voice version is " + voce.libVersion)
+                                var lang = Qt.locale().name
+                                console.log("Setting voice to " + lang);
+                                voce.setProperties(lang, 2, 3);
                             } else {
                                 gpxlog.closeGPX()
                             }
@@ -288,7 +276,7 @@ index == 0 ? "" : useMiles ? "mile" : "kilometer")
                         if (half) {
                             //: fractional distance
                             //% "%1 kilometers"
-                            speakmsg.push(qsTrId("id-frac-distance").arg(nextSpokenUpdate))
+                            speakmsg.push(qsTrId("id-frac-distance").arg(Number(nextSpokenUpdate).toLocaleString(Qt.locale())))
                         } else {
                             //: integer distance
                             //% "%n kilometer(s)"
