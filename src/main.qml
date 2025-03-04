@@ -79,7 +79,7 @@ Application {
     property bool useMiles: false
     property bool half: true
     property double nextSpokenUpdate: 0.5
-    property double speedup: 19.0
+    property double speedup: 1.0
     property int satsvisible: 0
     property int satsused: 0
 
@@ -87,14 +87,17 @@ Application {
         id: gpxlog
         property var text: ""
         property date timestamp
-        property real lat: 0
-        property real lon: 0
-        property real ele: 0
+        property var coord
+        property var prevcoord
 
         function logGPXsegment() {
             var currentTime = new Date
             var trkpt = '   <trkpt lat="%1" lon="%2">\n    <ele>%3</ele>\n    <sat>%4</sat>\n    <time>%5</time>\n   </trkpt>\n'
-            gpxlog.text += trkpt.arg(lat.toFixed(7)).arg(lon.toFixed(7)).arg(ele.toFixed(1)).arg(satsused).arg(currentTime.toISOString())
+            gpxlog.text += trkpt.arg(coord.latitude.toFixed(7)).arg(longitude.toFixed(7)).arg(coord.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString())
+            if (prevcoord.isValid) {
+                km += coord.distanceTo(prevcoord)
+            }
+            prevcoord = coord
         }
 
         function openGPX() {
@@ -132,9 +135,7 @@ Application {
                 var coord = position.coordinate;
                 console.log("Coordinate:", coord.longitude, coord.latitude, coord.altitude);
                 console.log("Validity:", position.longitudeValid, position.latitudeValid, position.altitudeValid);
-                gpxlog.lat = coord.latitude
-                gpxlog.lon = coord.longitude
-                gpxlog.ele = coord.altitude
+                gpxlog.coord = coord
             }
         }
     }
@@ -274,7 +275,7 @@ Application {
                 var elapsed = new Date().getTime() - startTime
                 elapsed *= speedup;
                 time.text = formatMilliseconds(elapsed);
-                km += (speedup / 2750)
+                //km += (speedup / 2750)
                 distance.text = formatDistance(km)
                 if (km >= nextSpokenUpdate) {
                     const pace = ""
@@ -313,7 +314,6 @@ Application {
                     half = !half
                 }
             }
-
         }
     }
 
