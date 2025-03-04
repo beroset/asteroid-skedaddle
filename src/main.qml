@@ -46,7 +46,7 @@ Application {
         triggeredOnStart: true
         onTriggered: {
             locationDBus.update()
-            if (isPlaying) {
+            if (isRunning) {
                 gpxlog.logGPXsegment()
             }
         }
@@ -73,13 +73,13 @@ Application {
         firstPage: firstPageComponent
     }
 
-    property bool isPlaying: false
+    property bool isRunning: false
     property double startTime: 0
     property double km: 0
     property bool useMiles: false
     property bool half: true
     property double nextSpokenUpdate: 0.5
-    property double speedup: 1.0
+    property double speedup: 19.0
     property int satsvisible: 0
     property int satsused: 0
 
@@ -200,12 +200,13 @@ Application {
                 }
 
                 RowLayout {
+                    width: parent.width
                     IconButton {
                         id: startstop
-                        iconName: isPlaying ? "ios-pause" : "ios-play"
+                        iconName: isRunning ? "ios-pause" : "ios-play"
                         onClicked: {
-                            isPlaying = !isPlaying
-                            if (isPlaying) {
+                            isRunning = !isRunning
+                            if (isRunning) {
                                 startTime = new Date().getTime()
                                 km = 0
                                 gpxlog.openGPX()
@@ -220,9 +221,14 @@ Application {
                     }
                     GridLayout {
                         columns: 2
-                        Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                        Label { text: "sats" }
-                        Label { text: "used" }
+                        Label { 
+                            text: "sats"
+                            Layout.fillWidth: true
+                        }
+                        Label {
+                            text: "used"
+                            Layout.fillWidth: true
+                        }
                         Label {
                             id: satvis
                             text: satsvisible
@@ -259,53 +265,55 @@ Application {
                 id: tenthsTimer
                 interval: 100
                 repeat:  true
-                running: isPlaying
+                running: isRunning
                 triggeredOnStart: true
 
-                onTriggered: {
-                    var elapsed = new Date().getTime() - startTime;
-                    elapsed *= speedup;
-                    time.text = formatMilliseconds(elapsed);
-                    km += (speedup / 2750)
-                    distance.text = formatDistance(km)
-                    if (km >= nextSpokenUpdate) {
-                        const pace = ""
-                        //: Spoken word for distance
-                        //% "Distance:"
-                        var speakmsg = [ qsTrId("id-distance") ]
-                        if (half) {
-                            //: fractional distance
-                            //% "%1 kilometers"
-                            speakmsg.push(qsTrId("id-frac-distance").arg(Number(nextSpokenUpdate).toLocaleString(Qt.locale())))
-                        } else {
-                            //: integer distance
-                            //% "%n kilometer(s)"
-                            speakmsg.push(qsTrId("id-int-distance", parseInt(nextSpokenUpdate)))
-                        }
-                        //: Spoken word for an elapsed time
-                        //% "Time:"
-                        speakmsg.push(qsTrId("id-time"))
-                        const [hours, minutes, seconds, tenths] = extractUnits(elapsed);
-                        if (hours > 0) {
-                            //: Spoken elapsed hour(s)
-                            //% "%n hour(s)"
-                            speakmsg.push(qsTrId("id-hours", parseInt(hours)))
-                        }
-                        if (minutes > 0) {
-                            //: Spoken elapsed minute(s)
-                            //% "%n minute(s)"
-                            speakmsg.push(qsTrId("id-minutes", parseInt(minutes)))
-                        }
-                        //: Spoken elapsed seconds(s)
-                        //% "%n second(s)"
-                        speakmsg.push(qsTrId("id-second", parseInt(seconds)))
-                        speak(speakmsg.join(" "));
-
-                        nextSpokenUpdate += 0.5
-                        half = !half
+                onTriggered: updateDisplay()
+            }
+            function updateDisplay() {
+                var elapsed = new Date().getTime() - startTime
+                elapsed *= speedup;
+                time.text = formatMilliseconds(elapsed);
+                km += (speedup / 2750)
+                distance.text = formatDistance(km)
+                if (km >= nextSpokenUpdate) {
+                    const pace = ""
+                    //: Spoken word for distance
+                    //% "Distance:"
+                    var speakmsg = [ qsTrId("id-distance") ]
+                    if (half) {
+                        //: fractional distance
+                        //% "%1 kilometers"
+                        speakmsg.push(qsTrId("id-frac-distance").arg(Number(nextSpokenUpdate).toLocaleString(Qt.locale())))
+                    } else {
+                        //: integer distance
+                        //% "%n kilometer(s)"
+                        speakmsg.push(qsTrId("id-int-distance", parseInt(nextSpokenUpdate)))
                     }
+                    //: Spoken word for an elapsed time
+                    //% "Time:"
+                    speakmsg.push(qsTrId("id-time"))
+                    const [hours, minutes, seconds, tenths] = extractUnits(elapsed);
+                    if (hours > 0) {
+                        //: Spoken elapsed hour(s)
+                        //% "%n hour(s)"
+                        speakmsg.push(qsTrId("id-hours", parseInt(hours)))
+                    }
+                    if (minutes > 0) {
+                        //: Spoken elapsed minute(s)
+                        //% "%n minute(s)"
+                        speakmsg.push(qsTrId("id-minutes", parseInt(minutes)))
+                    }
+                    //: Spoken elapsed seconds(s)
+                    //% "%n second(s)"
+                    speakmsg.push(qsTrId("id-second", parseInt(seconds)))
+                    speak(speakmsg.join(" "));
+
+                    nextSpokenUpdate += 0.5
+                    half = !half
                 }
             }
+
         }
     }
 
