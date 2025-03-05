@@ -19,6 +19,7 @@ import QtQuick 2.9
 import QtQuick.Layouts 1.3
 import QtPositioning 5.15
 import Nemo.Configuration 1.0
+import Nemo.KeepAlive 1.1
 import Nemo.DBus 2.0
 import org.asteroid.controls 1.0
 import org.asteroid.voice 1.0
@@ -28,6 +29,17 @@ Application {
 
     centerColor: "#181f54"
     outerColor: "#031cfc"
+
+    property bool isRunning: false
+    property double startTime: 0
+    property double km: 0
+    property bool useMiles: false
+    property bool half: true
+    property double nextSpokenUpdate: 0.5
+    property double speedup: 1.0
+    property int satsvisible: 0
+    property int satsused: 0
+    property bool silent: true
 
     ConfigurationValue {
         id: previousTime
@@ -73,16 +85,6 @@ Application {
         firstPage: firstPageComponent
     }
 
-    property bool isRunning: false
-    property double startTime: 0
-    property double km: 0
-    property bool useMiles: false
-    property bool half: true
-    property double nextSpokenUpdate: 0.5
-    property double speedup: 1.0
-    property int satsvisible: 0
-    property int satsused: 0
-
     Item {
         id: gpxlog
         property var text: ""
@@ -93,9 +95,11 @@ Application {
         function logGPXsegment() {
             var currentTime = new Date
             var trkpt = '   <trkpt lat="%1" lon="%2">\n    <ele>%3</ele>\n    <sat>%4</sat>\n    <time>%5</time>\n   </trkpt>\n'
-            gpxlog.text += trkpt.arg(coord.latitude.toFixed(7)).arg(longitude.toFixed(7)).arg(coord.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString())
-            if (prevcoord.isValid) {
+            gpxlog.text += trkpt.arg(coord.latitude.toFixed(7)).arg(coord.longitude.toFixed(7)).arg(coord.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString())
+            console.log(trkpt.arg(coord.latitude.toFixed(7)).arg(coord.longitude.toFixed(7)).arg(coord.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString()))
+            if (prevcoord && prevcoord.isValid) {
                 km += coord.distanceTo(prevcoord)
+                console.log("Delta: " + coord.distanceTo(prevcoord) + ", totalKm: " + km)
             }
             prevcoord = coord
         }
@@ -133,9 +137,9 @@ Application {
             onPositionChanged: {
                 var position = satellite.position;
                 var coord = position.coordinate;
+                gpxlog.coord = coord
                 console.log("Coordinate:", coord.longitude, coord.latitude, coord.altitude);
                 console.log("Validity:", position.longitudeValid, position.latitudeValid, position.altitudeValid);
-                gpxlog.coord = coord
             }
         }
     }
@@ -151,7 +155,9 @@ Application {
 
     function speak(message) {
         console.log("SAYING:", message)
-        voce.say(message)
+        if (!silent) {
+            voce.say(message)
+        }
     }
 
     function formatDistance(kilometers) {
@@ -275,7 +281,9 @@ Application {
                 var elapsed = new Date().getTime() - startTime
                 elapsed *= speedup;
                 time.text = formatMilliseconds(elapsed);
-                //km += (speedup / 2750)
+                if (speedup > 1) {
+                    km += (speedup / 2750)
+                }
                 distance.text = formatDistance(km)
                 if (km >= nextSpokenUpdate) {
                     const pace = ""
@@ -351,4 +359,5 @@ index == 0 ? "" : useMiles ? "mile" : "kilometer")
             }
         }
     }
+    Component.onCompleted: DisplayBlanking.preventBlanking = true
 }
