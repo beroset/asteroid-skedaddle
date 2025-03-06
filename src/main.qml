@@ -33,7 +33,6 @@ Application {
     property bool isRunning: false
     property double startTime: 0
     property double km: 0
-    property bool useMiles: false
     property bool half: true
     property double nextSpokenUpdate: 0.5
     property double speedup: 1.0
@@ -43,7 +42,7 @@ Application {
     property date now: new Date()
 
     ConfigurationValue {
-        id: previousTime
+        id: useMiles
         key: "/skedaddle/useMiles"
         defaultValue: false
     }
@@ -83,7 +82,6 @@ Application {
 
     LayerStack {
         id: layerStack
-        win: null
         firstPage: firstPageComponent
     }
 
@@ -167,8 +165,8 @@ Application {
     }
 
     function formatDistance(kilometers) {
-        var dist = kilometers * (useMiles ? 0.621371 : 1)
-        var distanceUnits = useMiles ? "mi" : "km"
+        var dist = kilometers * (useMiles.value ? 0.621371 : 1)
+        var distanceUnits = useMiles.value ? "mi" : "km"
         return `${dist.toFixed(2)} ${distanceUnits}`
     }
 
@@ -193,193 +191,18 @@ Application {
 
     Component {
         id: firstPageComponent
-
-        Item {
-
-            ColumnLayout {
-                anchors.fill: parent
-                spacing: 10
-                Label {
-                    id: distance
-                    Layout.topMargin: parent.height * 0.1
-                    Layout.alignment: Qt.AlignCenter
-                    Layout.preferredHeight: parent.height * 0.2
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    font {
-                        pixelSize: parent.height * 0.18
-                    }
-                    text: "0.00 km"
-                }
-
-                RowLayout {
-                    width: parent.width
-                    IconButton {
-                        id: startstop
-                        iconName: isRunning ? "ios-pause" : "ios-play"
-                        onClicked: {
-                            isRunning = !isRunning
-                            if (isRunning) {
-                                startTime = new Date().getTime()
-                                km = 0
-                                gpxlog.openGPX()
-                                console.log("Voice version is " + voce.libVersion)
-                                var lang = Qt.locale().name
-                                console.log("Setting voice to " + lang);
-                                voce.setProperties(lang, 2, 3);
-                            } else {
-                                gpxlog.closeGPX()
-                            }
-                        }
-                    }
-                    GridLayout {
-                        columns: 3
-                        Label { 
-                            text: "sats"
-                            Layout.fillWidth: true
-                        }
-                        Label {
-                            text: "used"
-                            Layout.fillWidth: true
-                        }
-                        Label {
-                            text: ""
-                        }
-                        Label {
-                            id: satvis
-                            text: satsvisible
-                        }
-                        Label {
-                            id: satused
-                            text: satsused
-                            color: satsused == 0 ? "lightpink" : satsused > 3 ? "lightgreen" : "lightyellow"
-                        }
-                        Label {
-                            text: now.toLocaleTimeString("HH:mm:ss")
-                        }
-                        Label {
-                            Layout.columnSpan: 3
-                            text: String(gpxlog.coord).split(",")[0]
-                            color: satused.color
-                        }
-                        Label {
-                            Layout.columnSpan: 3
-                            text: String(gpxlog.coord).split(",")[1]
-                            color: satused.color
-                        }
-                    }
-
-                    IconButton {
-                        iconName: "ios-settings"
-                        Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                        onClicked: layerStack.push(configLayer)
-                    }
-                }
-
-                Label {
-                    id: time
-                    Layout.bottomMargin: parent.height * 0.1
-                    Layout.alignment: Qt.AlignCenter
-                    Layout.preferredHeight: parent.height * 0.2
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    font {
-                        pixelSize: parent.height * 0.18
-                    }
-                    text: "0.0"
-                }
-            }
-
-            Timer {
-                id: tenthsTimer
-                interval: 100
-                repeat:  true
-                running: isRunning
-                triggeredOnStart: true
-
-                onTriggered: updateDisplay()
-            }
-            function updateDisplay() {
-                var elapsed = new Date().getTime() - startTime
-                elapsed *= speedup;
-                time.text = formatMilliseconds(elapsed);
-                if (speedup > 1) {
-                    km += (speedup / 2750)
-                }
-                distance.text = formatDistance(km)
-                if (km >= nextSpokenUpdate) {
-                    const pace = ""
-                    //: Spoken word for distance
-                    //% "Distance:"
-                    var speakmsg = [ qsTrId("id-distance") ]
-                    if (half) {
-                        //: fractional distance
-                        //% "%1 kilometers"
-                        speakmsg.push(qsTrId("id-frac-distance").arg(Number(nextSpokenUpdate).toLocaleString(Qt.locale())))
-                    } else {
-                        //: integer distance
-                        //% "%n kilometer(s)"
-                        speakmsg.push(qsTrId("id-int-distance", parseInt(nextSpokenUpdate)))
-                    }
-                    //: Spoken word for an elapsed time
-                    //% "Time:"
-                    speakmsg.push(qsTrId("id-time"))
-                    const [hours, minutes, seconds, tenths] = extractUnits(elapsed);
-                    if (hours > 0) {
-                        //: Spoken elapsed hour(s)
-                        //% "%n hour(s)"
-                        speakmsg.push(qsTrId("id-hours", parseInt(hours)))
-                    }
-                    if (minutes > 0) {
-                        //: Spoken elapsed minute(s)
-                        //% "%n minute(s)"
-                        speakmsg.push(qsTrId("id-minutes", parseInt(minutes)))
-                    }
-                    //: Spoken elapsed seconds(s)
-                    //% "%n second(s)"
-                    speakmsg.push(qsTrId("id-second", parseInt(seconds)))
-                    speak(speakmsg.join(" "));
-
-                    nextSpokenUpdate += 0.5
-                    half = !half
-                }
-            }
-        }
+        RunDisplay {}
     }
 
     Component {
         id: configLayer;
-        ColumnLayout {
-            Label {
-                text: "Speech"
-                horizontalAlignment: Text.AlignHCenter
-                Layout.preferredWidth: parent.width
-            }
-            CircularSpinner {
-                Layout.preferredHeight: parent.height * 0.4
-                Layout.preferredWidth: parent.width
-                model: 3
-                delegate:
-                SpinnerDelegate {
-                    id: miles
-                    text: [ "off", "half ", "" ][index] + (
-index == 0 ? "" : useMiles ? "mile" : "kilometer")
-                }
-            }
-            LabeledSwitch {
-                Layout.preferredHeight: parent.height * 0.2
-                //: Use miles instead of kilometers as unit
-                //% "Use miles"
-                text: qsTrId("id-use-miles")
-                onCheckedChanged: {
-                    if (checked) {
-                        useMiles = true
-                    } else {
-                        useMiles = false
-                    }
-                }
-            }
-        }
+        Settings {}
     }
-    Component.onCompleted: DisplayBlanking.preventBlanking = true
+    Component.onCompleted: {
+        DisplayBlanking.preventBlanking = true
+        console.log("Voice version is " + voce.libVersion)
+        var lang = Qt.locale().name
+        console.log("Setting voice to " + lang);
+        voce.setProperties(lang, 2, 3);
+    }
 }
