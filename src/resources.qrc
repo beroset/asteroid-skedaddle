@@ -3,5 +3,6 @@
         <file>main.qml</file>
         <file>Settings.qml</file>
         <file>RunDisplay.qml</file>
+        <file>GpxLog.qml</file>
     </qresource>
 </RCC>

@@ -85,67 +85,8 @@ Application {
         firstPage: firstPageComponent
     }
 
-    Item {
+    GpxLog {
         id: gpxlog
-        property var text: ""
-        property date timestamp
-        property var coord
-        property var prevcoord
-
-        function logGPXsegment() {
-            var loc = gpxlog.coord
-            var currentTime = new Date
-            var trkpt = '   <trkpt lat="%1" lon="%2">\n    <ele>%3</ele>\n    <sat>%4</sat>\n    <time>%5</time>\n   </trkpt>\n'
-            gpxlog.text += trkpt.arg(loc.latitude.toFixed(7)).arg(loc.longitude.toFixed(7)).arg(loc.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString())
-            console.log(trkpt.arg(loc.latitude.toFixed(7)).arg(loc.longitude.toFixed(7)).arg(loc.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString()))
-            if (prevcoord && prevcoord.isValid) {
-                var delta = prevcoord.distanceTo(loc)
-                km += (delta / 1000)
-                console.log("coord    : " + loc);
-                console.log("prevcoord: " + prevcoord);
-                console.log("Delta: " + delta + ", totalKm: " + km)
-            }
-            gpxlog.prevcoord = QtPositioning.coordinate(loc.latitude+0, loc.longitude+0, loc.altitude)
-        }
-
-        function openGPX() {
-            var header = '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.0" creator="AsteroidGPX" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.topografix.com/GPX/1/0" xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd">\n<metadata>\n<time>%1</time>\n</metadata>\n'
-            var trkopen = ' <trk>\n<name>Afternoon Run</name>\n<type>running</type>\n'
-            var currentTime = new Date
-            gpxlog.text = header.arg(currentTime.toISOString())
-            gpxlog.text += trkopen
-        }
-
-        function saveFile(fileUrl, text) {
-            var request = new XMLHttpRequest();
-            request.open("PUT", fileUrl, false);
-            request.send(text);
-            return request.status;
-        }
-
-        function closeGPX() {
-            var currentTime = new Date
-            var trkclose = '</trkseg>\n</trk>\n</gpx>\n'
-            gpxlog.text += trkclose
-            var filename = "file:///home/ceres/runlog%1.txt".arg(currentTime.toISOString())
-            //var filename = "file:///home/ejb/tools/AsteroidOS/asteroid-runner/src/runlog%1.txt".arg(currentTime.toISOString())
-            saveFile(filename, gpxlog.text)
-            satellite.active = false
-        }
-
-        PositionSource {
-            id: satellite
-            active: true
-            updateInterval: 1000
-            preferredPositioningMethods: PositionSource.SatellitePositioningMethods
-            onPositionChanged: {
-                var position = satellite.position;
-                var coord = position.coordinate;
-                gpxlog.coord = coord
-                console.log("Coordinate:", coord.longitude, coord.latitude, coord.altitude);
-                console.log("Validity:", position.longitudeValid, position.latitudeValid, position.altitudeValid);
-            }
-        }
     }
 
     function extractUnits(milliseconds) {
