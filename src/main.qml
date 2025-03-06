@@ -89,45 +89,11 @@ Application {
         id: gpxlog
     }
 
-    function extractUnits(milliseconds) {
-        const totalSeconds = Math.floor(milliseconds / 1000);
-        const tenths = Math.floor((milliseconds % 1000) / 100);
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-        return [hours, minutes, seconds, tenths];
-    }
-
     function speak(message) {
         console.log("SAYING:", message)
         if (!silent) {
             voce.say(message)
         }
-    }
-
-    function formatDistance(kilometers) {
-        var dist = kilometers * (useMiles.value ? 0.621371 : 1)
-        var distanceUnits = useMiles.value ? "mi" : "km"
-        return `${dist.toFixed(2)} ${distanceUnits}`
-    }
-
-    function formatMilliseconds(milliseconds) {
-        const [hours, minutes, seconds, tenths] = extractUnits(milliseconds);
-
-        const parts = [];
-
-        if (hours > 0) {
-            parts.push(hours.toString());
-            parts.push(minutes.toString().padStart(2, '0'));
-            parts.push(seconds.toString().padStart(2, '0') + "." + tenths);
-        } else if (minutes > 0) {
-            parts.push(minutes.toString())
-            parts.push(seconds.toString().padStart(2, '0') + "." + tenths);
-        } else {
-            parts.push(seconds.toString() + "." + tenths);
-        }
-
-        return parts.join(':');
     }
 
     Component {
