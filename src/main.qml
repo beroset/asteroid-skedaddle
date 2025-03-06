@@ -40,6 +40,7 @@ Application {
     property int satsvisible: 0
     property int satsused: 0
     property bool silent: true
+    property date now: new Date()
 
     ConfigurationValue {
         id: previousTime
@@ -57,6 +58,7 @@ Application {
         running: true
         triggeredOnStart: true
         onTriggered: {
+            now = new Date()
             locationDBus.update()
             if (isRunning) {
                 gpxlog.logGPXsegment()
@@ -93,15 +95,19 @@ Application {
         property var prevcoord
 
         function logGPXsegment() {
+            var loc = gpxlog.coord
             var currentTime = new Date
             var trkpt = '   <trkpt lat="%1" lon="%2">\n    <ele>%3</ele>\n    <sat>%4</sat>\n    <time>%5</time>\n   </trkpt>\n'
-            gpxlog.text += trkpt.arg(coord.latitude.toFixed(7)).arg(coord.longitude.toFixed(7)).arg(coord.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString())
-            console.log(trkpt.arg(coord.latitude.toFixed(7)).arg(coord.longitude.toFixed(7)).arg(coord.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString()))
+            gpxlog.text += trkpt.arg(loc.latitude.toFixed(7)).arg(loc.longitude.toFixed(7)).arg(loc.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString())
+            console.log(trkpt.arg(loc.latitude.toFixed(7)).arg(loc.longitude.toFixed(7)).arg(loc.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString()))
             if (prevcoord && prevcoord.isValid) {
-                km += coord.distanceTo(prevcoord)
-                console.log("Delta: " + coord.distanceTo(prevcoord) + ", totalKm: " + km)
+                var delta = prevcoord.distanceTo(loc)
+                km += (delta / 1000)
+                console.log("coord    : " + loc);
+                console.log("prevcoord: " + prevcoord);
+                console.log("Delta: " + delta + ", totalKm: " + km)
             }
-            prevcoord = coord
+            gpxlog.prevcoord = QtPositioning.coordinate(loc.latitude+0, loc.longitude+0, loc.altitude)
         }
 
         function openGPX() {
@@ -227,7 +233,7 @@ Application {
                         }
                     }
                     GridLayout {
-                        columns: 2
+                        columns: 3
                         Label { 
                             text: "sats"
                             Layout.fillWidth: true
@@ -237,6 +243,9 @@ Application {
                             Layout.fillWidth: true
                         }
                         Label {
+                            text: ""
+                        }
+                        Label {
                             id: satvis
                             text: satsvisible
                         }
@@ -244,6 +253,19 @@ Application {
                             id: satused
                             text: satsused
                             color: satsused == 0 ? "lightpink" : satsused > 3 ? "lightgreen" : "lightyellow"
+                        }
+                        Label {
+                            text: now.toLocaleTimeString("HH:mm:ss")
+                        }
+                        Label {
+                            Layout.columnSpan: 3
+                            text: String(gpxlog.coord).split(",")[0]
+                            color: satused.color
+                        }
+                        Label {
+                            Layout.columnSpan: 3
+                            text: String(gpxlog.coord).split(",")[1]
+                            color: satused.color
                         }
                     }
 
