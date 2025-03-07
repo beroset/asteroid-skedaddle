@@ -21,14 +21,6 @@ import QtPositioning 5.15
 import org.asteroid.controls 1.0
 
 Item {
-    function extractUnits(milliseconds) {
-        const totalSeconds = Math.floor(milliseconds / 1000);
-        const tenths = Math.floor((milliseconds % 1000) / 100);
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-        return [hours, minutes, seconds, tenths];
-    }
 
     function formatMilliseconds(milliseconds) {
         const [hours, minutes, seconds, tenths] = extractUnits(milliseconds);
@@ -141,61 +133,7 @@ Item {
             font {
                 pixelSize: parent.height * 0.18
             }
-            text: "0.0"
-        }
-    }
-
-    Timer {
-        id: tenthsTimer
-        interval: 100
-        repeat:  true
-        running: isRunning
-        triggeredOnStart: true
-
-        onTriggered: updateDisplay()
-    }
-    function updateDisplay() {
-        var elapsed = new Date().getTime() - startTime
-        elapsed *= speedup;
-        time.text = formatMilliseconds(elapsed);
-        if (speedup > 1) {
-            km += (speedup / 2750)
-        }
-        if (km >= nextSpokenUpdate) {
-            const pace = ""
-            //: Spoken word for distance
-            //% "Distance:"
-            var speakmsg = [ qsTrId("id-distance") ]
-            if (half) {
-                //: fractional distance
-                //% "%1 kilometers"
-                speakmsg.push(qsTrId("id-frac-distance").arg(Number(nextSpokenUpdate).toLocaleString(Qt.locale())))
-            } else {
-                //: integer distance
-                //% "%n kilometer(s)"
-                speakmsg.push(qsTrId("id-int-distance", parseInt(nextSpokenUpdate)))
-            }
-            //: Spoken word for an elapsed time
-            //% "Time:"
-            speakmsg.push(qsTrId("id-time"))
-            const [hours, minutes, seconds, tenths] = extractUnits(elapsed);
-            if (hours > 0) {
-                //: Spoken elapsed hour(s)
-                //% "%n hour(s)"
-                speakmsg.push(qsTrId("id-hours", parseInt(hours)))
-            }
-            if (minutes > 0) {
-                //: Spoken elapsed minute(s)
-                //% "%n minute(s)"
-                speakmsg.push(qsTrId("id-minutes", parseInt(minutes)))
-            }
-            //: Spoken elapsed seconds(s)
-            //% "%n second(s)"
-            speakmsg.push(qsTrId("id-second", parseInt(seconds)))
-            announcer.speak(speakmsg.join(" "));
-
-            nextSpokenUpdate += 0.5
-            half = !half
+            text: formatMilliseconds(elapsed);
         }
     }
 }

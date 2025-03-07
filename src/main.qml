@@ -22,7 +22,6 @@ import Nemo.Configuration 1.0
 import Nemo.KeepAlive 1.1
 import Nemo.DBus 2.0
 import org.asteroid.controls 1.0
-import org.asteroid.voice 1.0
 
 Application {
     id: app
@@ -35,11 +34,12 @@ Application {
     property double km: 0
     property bool half: true
     property double nextSpokenUpdate: 0.5
-    property double speedup: 1.0
+    property double speedup: 19.0
     property int satsvisible: 0
     property int satsused: 0
     property bool silent: true
     property date now: new Date()
+    property real elapsed: 0
 
     ConfigurationValue {
         id: useMiles
@@ -54,8 +54,33 @@ Application {
         defaultValue: 0
     }
 
-    Voice {
-        id: voce
+    Timer {
+        id: tenthsTimer
+        interval: 100
+        repeat:  true
+        running: isRunning
+        triggeredOnStart: true
+
+        onTriggered: updateDisplay()
+    }
+
+    function extractUnits(milliseconds) {
+        const totalSeconds = Math.floor(milliseconds / 1000);
+        const tenths = Math.floor((milliseconds % 1000) / 100);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return [hours, minutes, seconds, tenths];
+    }
+
+    function updateDisplay() {
+        elapsed = (new Date().getTime() - startTime) * speedup
+        if (speedup > 1) {
+            km += (speedup / 2750)
+        }
+        if (km >= nextSpokenUpdate) {
+            announcer.speakRunUpdate()
+        }
     }
 
     Timer {

@@ -19,6 +19,9 @@ import QtQuick 2.9
 import org.asteroid.voice 1.0
 
 Item {
+    //: Spoken word for distance
+    //% "Distance:"
+    readonly property string distanceString: qsTrId("id-distance")
     Voice {
         id: voce
     }
@@ -35,4 +38,38 @@ Item {
         console.log("Setting voice to " + lang);
         voce.setProperties(lang, 2, 3);
     }
+    function speakRunUpdate() {
+            const pace = ""
+            var speakmsg = [ distanceString ]
+            if (half) {
+                //: fractional distance
+                //% "%1 kilometers"
+                speakmsg.push(qsTrId("id-frac-distance").arg(Number(nextSpokenUpdate).toLocaleString(Qt.locale())))
+            } else {
+                //: integer distance
+                //% "%n kilometer(s)"
+                speakmsg.push(qsTrId("id-int-distance", parseInt(nextSpokenUpdate)))
+            }
+            //: Spoken word for an elapsed time
+            //% "Time:"
+            speakmsg.push(qsTrId("id-time"))
+            const [hours, minutes, seconds, tenths] = extractUnits(elapsed);
+            if (hours > 0) {
+                //: Spoken elapsed hour(s)
+                //% "%n hour(s)"
+                speakmsg.push(qsTrId("id-hours", parseInt(hours)))
+            }
+            if (minutes > 0) {
+                //: Spoken elapsed minute(s)
+                //% "%n minute(s)"
+                speakmsg.push(qsTrId("id-minutes", parseInt(minutes)))
+            }
+            //: Spoken elapsed seconds(s)
+            //% "%n second(s)"
+            speakmsg.push(qsTrId("id-second", parseInt(seconds)))
+            announcer.speak(speakmsg.join(" "));
+
+            nextSpokenUpdate += 0.5
+            half = !half
+        }
 }
