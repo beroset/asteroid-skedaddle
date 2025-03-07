@@ -47,6 +47,13 @@ Application {
         defaultValue: false
     }
 
+    ConfigurationValue {
+        id: announce
+        key: "/skedaddle/announce"
+        // values: 0 = off, 1 = half, 2 = whole
+        defaultValue: 0
+    }
+
     Voice {
         id: voce
     }
@@ -89,11 +96,8 @@ Application {
         id: gpxlog
     }
 
-    function speak(message) {
-        console.log("SAYING:", message)
-        if (!silent) {
-            voce.say(message)
-        }
+    Announcer {
+        id: announcer
     }
 
     Component {
@@ -107,9 +111,5 @@ Application {
     }
     Component.onCompleted: {
         DisplayBlanking.preventBlanking = true
-        console.log("Voice version is " + voce.libVersion)
-        var lang = Qt.locale().name
-        console.log("Setting voice to " + lang);
-        voce.setProperties(lang, 2, 3);
     }
 }

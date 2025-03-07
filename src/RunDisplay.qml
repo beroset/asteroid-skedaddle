@@ -193,7 +193,7 @@ Item {
             //: Spoken elapsed seconds(s)
             //% "%n second(s)"
             speakmsg.push(qsTrId("id-second", parseInt(seconds)))
-            speak(speakmsg.join(" "));
+            announcer.speak(speakmsg.join(" "));
 
             nextSpokenUpdate += 0.5
             half = !half
