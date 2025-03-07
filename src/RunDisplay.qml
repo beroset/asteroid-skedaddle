@@ -68,7 +68,7 @@ Item {
             font {
                 pixelSize: parent.height * 0.18
             }
-            text: "0.00 km"
+            text: formatDistance(km)
         }
 
         RowLayout {
@@ -161,7 +161,6 @@ Item {
         if (speedup > 1) {
             km += (speedup / 2750)
         }
-        distance.text = formatDistance(km)
         if (km >= nextSpokenUpdate) {
             const pace = ""
             //: Spoken word for distance
