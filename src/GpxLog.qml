@@ -30,13 +30,10 @@ Item {
         var currentTime = new Date
         var trkpt = '   <trkpt lat="%1" lon="%2">\n    <ele>%3</ele>\n    <sat>%4</sat>\n    <time>%5</time>\n   </trkpt>\n'
         text += trkpt.arg(loc.latitude.toFixed(7)).arg(loc.longitude.toFixed(7)).arg(loc.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString())
-        console.log(trkpt.arg(loc.latitude.toFixed(7)).arg(loc.longitude.toFixed(7)).arg(loc.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString()))
+        // console.log(trkpt.arg(loc.latitude.toFixed(7)).arg(loc.longitude.toFixed(7)).arg(loc.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString()))
         if (prevcoord && prevcoord.isValid) {
             var delta = prevcoord.distanceTo(loc)
-            km += (delta / 1000)
-            console.log("coord    : " + loc);
-            console.log("prevcoord: " + prevcoord);
-            console.log("Delta: " + delta + ", totalKm: " + km)
+            rundata.km += (delta / 1000)
         }
         prevcoord = QtPositioning.coordinate(loc.latitude+0, loc.longitude+0, loc.altitude)
     }

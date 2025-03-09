@@ -30,16 +30,43 @@ Application {
     outerColor: "#031cfc"
 
     property bool isRunning: false
-    property double startTime: 0
-    property double km: 0
-    property bool half: true
-    property double nextSpokenUpdate: 0.5
-    property double speedup: 19.0
+    property double speedup: 1.0
     property int satsvisible: 0
     property int satsused: 0
-    property bool silent: true
     property date now: new Date()
-    property real elapsed: 0
+
+    Item {
+        id: rundata
+        property double startTime: 0
+        property double km: 0
+        property bool half: true
+        property double lastHalfKmTime: 0
+        property double lastHalfMileTime: 0
+        property double lastFullKmTime: 0
+        property double lastFullMileTime: 0
+        property double nextHalfKm: 0.5
+        readonly property double kmToMiles: 0.621371
+        property double nextHalfMile: 0.5 / kmToMiles
+        property real elapsed: 0
+
+        function reset() {
+            startTime = new Date().getTime()
+            km = 0
+            half = true
+            lastHalfKmTime = 0
+            lastHalfMileTime = 0
+            lastFullKmTime = 0
+            lastFullMileTime = 0
+            nextHalfKm = 0.5
+            nextHalfMile = 0.5 / kmToMiles
+        }
+
+        function update() {
+            nextHalfMile = (Math.floor(2 * km * kmToMiles) + 1) / kmToMiles / 2;
+            nextHalfKm = (Math.floor(2 * km) + 1) / 2;
+            half = !half
+        }
+    }
 
     ConfigurationValue {
         id: useMiles
@@ -74,12 +101,37 @@ Application {
     }
 
     function updateDisplay() {
-        elapsed = (new Date().getTime() - startTime) * speedup
+        rundata.elapsed = (new Date().getTime() - rundata.startTime) * speedup
         if (speedup > 1) {
-            km += (speedup / 2750)
+            rundata.km += (speedup / 2750)
         }
-        if (km >= nextSpokenUpdate) {
-            announcer.speakRunUpdate()
+        if (rundata.km >= rundata.nextHalfMile) {
+            if (useMiles.value) {
+                announcer.speakRunUpdate()
+            }
+            rundata.lastHalfMileTime = Number(rundata.elapsed)
+            /*
+             * This looks wrong but it isn't.
+             * The half value is updated by the call
+             * to speakRunUpdate.
+             */
+            if (rundata.half) {
+                rundata.lastFullMileTime = Number(rundata.elapsed)
+            }
+        }
+        if (rundata.km >= rundata.nextHalfKm) {
+            if (! useMiles.value) {
+                announcer.speakRunUpdate()
+            }
+            rundata.lastHalfKmTime = Number(rundata.elapsed)
+            /*
+             * This looks wrong but it isn't.
+             * The half value is updated by the call
+             * to speakRunUpdate.
+             */
+            if (rundata.half) {
+                rundata.lastFullKmTime = Number(rundata.elapsed)
+            }
         }
     }
 

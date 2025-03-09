@@ -42,8 +42,14 @@ Item {
     }
 
     function formatDistance(kilometers) {
-        var dist = kilometers * (useMiles.value ? 0.621371 : 1)
-        var distanceUnits = useMiles.value ? "mi" : "km"
+        var dist = kilometers * (useMiles.value ? rundata.kmToMiles : 1)
+        var distanceUnits = useMiles.value ? 
+            //: Abbreviation for miles
+            //% "mi"
+            qsTrId("id-mile-abbrev") : 
+            //: Abbreviation for kilometers
+            //% "km"
+            qsTrId("id-km-abbrev")
         return `${dist.toFixed(2)} ${distanceUnits}`
     }
 
@@ -60,7 +66,7 @@ Item {
             font {
                 pixelSize: parent.height * 0.18
             }
-            text: formatDistance(km)
+            text: formatDistance(rundata.km)
         }
 
         RowLayout {
@@ -71,8 +77,7 @@ Item {
                 onClicked: {
                     isRunning = !isRunning
                     if (isRunning) {
-                        startTime = new Date().getTime()
-                        km = 0
+                        rundata.reset()
                         gpxlog.openGPX()
                     } else {
                         gpxlog.closeGPX()
@@ -81,12 +86,18 @@ Item {
             }
             GridLayout {
                 columns: 3
-                Label { 
-                    text: "sats"
+                Label {
+                    //: label for number of satellites visible
+                    //: Note that this must be a short string
+                    //% "sats"
+                    text: qsTrId("id-sats")
                     Layout.fillWidth: true
                 }
                 Label {
-                    text: "used"
+                    //: label for number of satellites used
+                    //: Note that this must be a short string
+                    //% "used"
+                    text: qsTrId("id-sats-used")
                     Layout.fillWidth: true
                 }
                 Label {
@@ -133,7 +144,7 @@ Item {
             font {
                 pixelSize: parent.height * 0.18
             }
-            text: formatMilliseconds(elapsed);
+            text: formatMilliseconds(rundata.elapsed);
         }
     }
 }
