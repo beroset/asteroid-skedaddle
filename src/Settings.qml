@@ -37,12 +37,19 @@ ColumnLayout {
             text: [ "off", "half ", "" ][index] + (
 index == 0 ? "" : useMiles.value ? "mile" : "kilometer")
         }
+        Component.onCompleted: {
+            currentIndex = announce.value
+        }
+        Component.onDestruction: {
+            announce.value = currentIndex
+        }
     }
     LabeledSwitch {
         Layout.preferredHeight: parent.height * 0.2
         //: Use miles instead of kilometers as unit
         //% "Use miles"
         text: qsTrId("id-use-miles")
+        checked: useMiles.value
         onCheckedChanged: {
             if (checked) {
                 useMiles.value = true
