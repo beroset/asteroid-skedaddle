@@ -19,57 +19,108 @@ import QtQuick 2.9
 import org.asteroid.voice 1.0
 
 Item {
-    //: Spoken word for distance
-    //% "Distance:"
-    readonly property string distanceString: qsTrId("id-distance")
     Voice {
         id: voce
     }
 
     function speak(message) {
         console.log("SAYING:", message)
-        if (announce.value > 0) {
-            voce.say(message)
+        console.log("ANNOUNCE VALUE:",announce.value)
+        switch(announce.value) {
+            case 2:  // every whole unit
+                if ( rundata.half ) return;
+            case 1:  // every half unit
+                voce.say(message)
+                break;
+            case 0:  // no announcements
+            default:
+                // say nothing
         }
     }
+
     Component.onCompleted: {
         console.log("Voice version is " + voce.libVersion)
         var lang = Qt.locale().name
         console.log("Setting voice to " + lang);
         voce.setProperties(lang, 2, 3);
     }
-    function speakRunUpdate() {
-            const pace = ""
-            var speakmsg = [ distanceString ]
-            if (half) {
-                //: fractional distance
-                //% "%1 kilometers"
-                speakmsg.push(qsTrId("id-frac-distance").arg(Number(nextSpokenUpdate).toLocaleString(Qt.locale())))
-            } else {
-                //: integer distance
-                //% "%n kilometer(s)"
-                speakmsg.push(qsTrId("id-int-distance", parseInt(nextSpokenUpdate)))
-            }
-            //: Spoken word for an elapsed time
-            //% "Time:"
-            speakmsg.push(qsTrId("id-time"))
-            const [hours, minutes, seconds, tenths] = extractUnits(elapsed);
-            if (hours > 0) {
-                //: Spoken elapsed hour(s)
-                //% "%n hour(s)"
-                speakmsg.push(qsTrId("id-hours", parseInt(hours)))
-            }
-            if (minutes > 0) {
-                //: Spoken elapsed minute(s)
-                //% "%n minute(s)"
-                speakmsg.push(qsTrId("id-minutes", parseInt(minutes)))
-            }
-            //: Spoken elapsed seconds(s)
-            //% "%n second(s)"
-            speakmsg.push(qsTrId("id-second", parseInt(seconds)))
-            announcer.speak(speakmsg.join(" "));
 
-            nextSpokenUpdate += 0.5
-            half = !half
+    function speakRunUpdate() {
+        var mileDistance = Math.floor(2 * rundata.nextHalfMile * rundata.kmToMiles) / 2;
+        console.log("distance:",mileDistance,"mi");
+        console.log("distance:",rundata.km,"km");
+        //: Spoken word for distance
+        //% "Distance:"
+        var speakmsg = [ qsTrId("id-distance") ]
+        if (rundata.half) {
+            if (useMiles.value) {
+                //: fractional distance in miles
+                //% "%1 miles"
+                speakmsg.push(qsTrId("id-frac-miles").arg(Number(mileDistance).toLocaleString(Qt.locale())))
+            } else {
+                //: fractional distance in km
+                //% "%1 kilometers"
+                speakmsg.push(qsTrId("id-frac-distance").arg(Number(rundata.nextHalfKm).toLocaleString(Qt.locale())))
+            }
+        } else {
+            if (useMiles.value) {
+                //: integer distance in km
+                //% "%n mile(s)"
+                speakmsg.push(qsTrId("id-int-miles", parseInt(mileDistance)))
+            } else {
+                //: integer distance in km
+                //% "%n kilometer(s)"
+                speakmsg.push(qsTrId("id-int-distance", parseInt(rundata.nextHalfKm)))
+            }
         }
+        speakmsg.push(";")  // pause between spoken measurements
+        //: Spoken word for an elapsed time
+        //% "Time:"
+        speakmsg.push(qsTrId("id-time"))
+        var [hours, minutes, seconds, tenths] = extractUnits(rundata.elapsed);
+        if (hours > 0) {
+            //: Spoken elapsed hour(s)
+            //% "%n hour(s)"
+            speakmsg.push(qsTrId("id-hours", parseInt(hours)))
+        }
+        if (minutes > 0) {
+            //: Spoken elapsed minute(s)
+            //% "%n minute(s)"
+            speakmsg.push(qsTrId("id-minutes", parseInt(minutes)))
+        }
+        //: Spoken elapsed seconds(s)
+        //% "%n second(s)"
+        speakmsg.push(qsTrId("id-second", parseInt(seconds)))
+        /*
+         * Now calculate the pace
+         */
+        speakmsg.push(";")  // pause between spoken measurements
+        if (rundata.half) {
+            //: Spoken split pace
+            //% "split pace"
+            //~ For half km or half mile
+            speakmsg.push(qsTrId("id-split-pace"))
+            var [phours, pminutes, pseconds, ptenths] = extractUnits(2 * (rundata.elapsed - (useMiles.value ? rundata.lastHalfMileTime : rundata.lastHalfKmTime)));
+        } else {
+            //: Spoken pace
+            //% "pace"
+            speakmsg.push(qsTrId("id-pace"))
+            var [phours, pminutes, pseconds, ptenths] = extractUnits(rundata.elapsed - (useMiles.value ? rundata.lastFullMileTime : rundata.lastFullKmTime));
+        }
+        if (hours > 0) {
+            //: Spoken elapsed hour(s)
+            //% "%n hour(s)"
+            speakmsg.push(qsTrId("id-hours", parseInt(phours)))
+        }
+        if (minutes > 0) {
+            //: Spoken elapsed minute(s)
+            //% "%n minute(s)"
+            speakmsg.push(qsTrId("id-minutes", parseInt(pminutes)))
+        }
+        //: Spoken elapsed seconds(s)
+        //% "%n second(s)"
+        speakmsg.push(qsTrId("id-second", parseInt(pseconds)))
+        announcer.speak(speakmsg.join(" "));
+        rundata.update()
+    }
 }
