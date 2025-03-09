@@ -115,6 +115,7 @@ Item {
                 Label {
                     text: now.toLocaleTimeString("HH:mm:ss")
                 }
+                /*
                 Label {
                     Layout.columnSpan: 3
                     text: String(gpxlog.coord).split(",")[0]
@@ -125,6 +126,7 @@ Item {
                     text: String(gpxlog.coord).split(",")[1]
                     color: satused.color
                 }
+                */
             }
 
             IconButton {
