@@ -40,7 +40,7 @@ Item {
 
     function openGPX() {
         var header = '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.0" creator="AsteroidGPX" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.topografix.com/GPX/1/0" xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd">\n<metadata>\n<time>%1</time>\n</metadata>\n'
-        var trkopen = ' <trk>\n<name>Afternoon Run</name>\n<type>running</type>\n'
+        var trkopen = ' <trk>\n<name>Run</name>\n<type>running</type>\n'
         var currentTime = new Date
         text = header.arg(currentTime.toISOString())
         text += trkopen
