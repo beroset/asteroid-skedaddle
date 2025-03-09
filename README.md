@@ -4,6 +4,8 @@
 
 In English "skedaddle" is verb meaning "to run off hastily."  `asteroid-skedaddle` is an running log application that runs on [AsteroidOS](https://asteroidos.org/).
 
+![screenshot](https://github.com/beroset/asteroid-skedaddle/raw/main/screenshot.jpg?raw=true, "screen shot")
+
 ## Features
 
  * Preserves your privacy - no data is uploaded anywhere, ever.  Your data is yours.
