@@ -17,9 +17,15 @@
 
 #include <asteroidapp.h>
 #include "Voice.h"
+#include "FileHelper.h"
 
 int main(int argc, char *argv[])
 {
     qmlRegisterType<Voice>("org.asteroid.voice", 1, 0, "Voice");
+    qmlRegisterSingletonType<FileHelper>("org.asteroid.filehelper", 1, 0, "FileHelper",
+        [](QQmlEngine *, QJSEngine *) -> QObject * {
+            return FileHelper::instance();
+        });
+
     return AsteroidApp::main(argc, argv);
 }
