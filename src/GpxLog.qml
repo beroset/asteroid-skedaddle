@@ -19,6 +19,7 @@ import QtQuick 2.9
 import QtQuick.Layouts 1.3
 import QtPositioning 5.15
 import org.asteroid.controls 1.0
+import org.asteroid.filehelper 1.0
 
 Item {
     property var text: ""
@@ -46,20 +47,12 @@ Item {
         text += trkopen
     }
 
-    function saveFile(fileUrl, text) {
-        var request = new XMLHttpRequest();
-        request.open("PUT", fileUrl, false);
-        request.send(text);
-        return request.status;
-    }
-
     function closeGPX() {
         var currentTime = new Date
         var trkclose = '</trkseg>\n</trk>\n</gpx>\n'
         text += trkclose
-        var filename = "file:///home/ceres/runlog%1.txt".arg(currentTime.toISOString())
-        //var filename = "file:///home/ejb/tools/AsteroidOS/asteroid-runner/src/runlog%1.txt".arg(currentTime.toISOString())
-        saveFile(filename, text)
+        var filename = "/home/ceres/runlog%1.gpx".arg(currentTime.toISOString())
+        FileHelper.writeFile(filename, text)
         satellite.active = false
     }
 
