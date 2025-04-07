@@ -18,6 +18,7 @@
 import QtQuick 2.9
 import QtQuick.Layouts 1.3
 import QtPositioning 5.15
+import Nemo.Mce 1.0
 import org.asteroid.controls 1.0
 
 Item {
@@ -101,7 +102,7 @@ Item {
                     Layout.fillWidth: true
                 }
                 Label {
-                    text: ""
+                    text: batteryLevel.percent + "%"
                 }
                 Label {
                     id: satvis
@@ -134,6 +135,9 @@ Item {
                 Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
                 onClicked: layerStack.push(configLayer,{})
             }
+        }
+        MceBatteryLevel {
+            id: batteryLevel
         }
 
         Label {
