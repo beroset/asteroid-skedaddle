@@ -34,6 +34,7 @@ Application {
 
     property bool isRunning: false
     property bool isPaused: false
+    property bool isGPSAvailable: false
     property double speedup: 1.0
     property int satsvisible: 0
     property int satsused: 0
@@ -205,7 +206,27 @@ Application {
         onTriggered: {
             now = new Date()
             locationDBus.update()
-            if (isRunning) {
+            if (satsused >= 3 && !isGPSAvailable) {
+                isGPSAvailable = true
+                runnotification.replacesId = 0
+                runnotification.previewSummary = "GPS"
+                runnotification.previewBody = "available"
+                if (vibrateAnnounce.value) {
+                    feedback.play()
+                }
+                runnotification.publish()
+            }
+            else if (satsused < 3 && isGPSAvailable) {
+                isGPSAvailable = false
+                runnotification.replacesId = 0
+                runnotification.previewSummary = "GPS"
+                runnotification.previewBody = "unavailable"
+                if (vibrateAnnounce.value) {
+                    feedback.play()
+                }
+                runnotification.publish()
+            }
+            if (isRunning && !isPaused) {
                 gpxlog.logGPXsegment()
             }
         }
