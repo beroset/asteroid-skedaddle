@@ -78,11 +78,38 @@ Flickable{
                     }
                     Component.onCompleted: {
                         currentIndex = distanceUnit.value
-
                     }
                     Component.onDestruction: {
                         distanceUnit.value = currentIndex > 1 ? distanceUnit.defaultValue : currentIndex
                     }
+                }
+            }
+        }
+        LabeledSwitch {
+            //: Use miles instead of kilometers as unit
+            //% "Use miles"
+            height: settingsflick.height*0.2
+            text: "Allow Speaking"
+            checked: speakAnnounce.value
+            onCheckedChanged: {
+                if (checked) {
+                    speakAnnounce.value = true
+                } else {
+                    speakAnnounce.value = false
+                }
+            }
+        }
+        LabeledSwitch {
+            //: Use miles instead of kilometers as unit
+            //% "Use miles"
+            height: settingsflick.height*0.2
+            text: "Vibrate on Notification"
+            checked: vibrateAnnounce.value
+            onCheckedChanged: {
+                if (checked) {
+                    vibrateAnnounce.value = true
+                } else {
+                    vibrateAnnounce.value = false
                 }
             }
         }

@@ -24,6 +24,7 @@ import Nemo.KeepAlive 1.1
 import Nemo.DBus 2.0
 import org.asteroid.controls 1.0
 import Nemo.Ngf 1.0
+import Nemo.Notifications 1.0
 
 Application {
     id: app
@@ -89,6 +90,18 @@ Application {
         defaultValue: 0
     }
 
+    ConfigurationValue {
+        id: speakAnnounce
+        key: "/skedaddle/speakAnnounce"
+        defaultValue: false
+    }
+
+    ConfigurationValue {
+        id: vibrateAnnounce
+        key: "/skedaddle/vibrateAnnounce"
+        defaultValue: true
+    }
+
     Timer {
         id: tenthsTimer
         interval: 100
@@ -102,6 +115,11 @@ Application {
     NonGraphicalFeedback {
         id: feedback
         event: "press"
+    }
+
+    Notification {
+        id: runnotification
+        appName: "asteroid-skedaddle"
     }
 
     function extractUnits(milliseconds) {
@@ -135,9 +153,18 @@ Application {
                 if (vibrateAnnounce.value) {
                     feedback.play()
                 }
+
+                // graphical feedback
+                var mileDistance = Math.floor(2 * rundata.nextHalfMile * rundata.kmToMiles) / 2
+                runnotification.replacesId = 0
+                runnotification.previewSummary = mileDistance.toString() + "mi"
+                runnotification.previewBody = minutes.toString() + "m " + seconds.toString() + "s\n" + Math.floor((3600 / (Number(rundata.lastHalfMileTime)/1000)) * rundata.km*rundata.kmToMiles).toString() + "mi/h"
+                runnotification.publish()
             
                 // acustic feedback
+                if (speakAnnounce.value) {
                     announcer.speakRunUpdate(isFullMile)
+                }
             }
             rundata.update()
         }
@@ -155,8 +182,16 @@ Application {
                     feedback.play()
                 }
 
+                // graphical feedback
+                runnotification.replacesId = 0
+                runnotification.previewSummary = rundata.nextHalfKm.toString() + "km"
+                runnotification.previewBody = minutes.toString() + "m " + seconds.toString() + "s\n" + Math.floor((3600 / (Number(rundata.lastHalfKmTime)/1000)) * rundata.km).toString() + "km/h"
+                runnotification.publish()
+
                 // acustic feedback
+                if (speakAnnounce.value) {
                     announcer.speakRunUpdate(isFullKm)
+                }
             }
             rundata.update()
         }
