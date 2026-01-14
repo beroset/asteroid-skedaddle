@@ -15,13 +15,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.9
+import QtQuick 2.15
 import QtQuick.Layouts 1.3
 import QtPositioning 5.15
+import QtSensors 5.11
 import Nemo.Configuration 1.0
 import Nemo.KeepAlive 1.1
 import Nemo.DBus 2.0
 import org.asteroid.controls 1.0
+import Nemo.Ngf 1.0
 
 Application {
     id: app
@@ -30,16 +32,17 @@ Application {
     outerColor: "#031cfc"
 
     property bool isRunning: false
+    property bool isPaused: false
     property double speedup: 1.0
     property int satsvisible: 0
     property int satsused: 0
     property date now: new Date()
+    property int bpm: 0
 
     Item {
         id: rundata
         property double startTime: 0
         property double km: 0
-        property bool half: true
         property double lastHalfKmTime: 0
         property double lastHalfMileTime: 0
         property double lastFullKmTime: 0
@@ -48,30 +51,35 @@ Application {
         readonly property double kmToMiles: 0.621371
         property double nextHalfMile: 0.5 / kmToMiles
         property real elapsed: 0
+        property real savedTime: 0
 
         function reset() {
             startTime = new Date().getTime()
             km = 0
-            half = true
             lastHalfKmTime = 0
             lastHalfMileTime = 0
             lastFullKmTime = 0
             lastFullMileTime = 0
             nextHalfKm = 0.5
             nextHalfMile = 0.5 / kmToMiles
+            savedTime = 0
         }
 
         function update() {
             nextHalfMile = (Math.floor(2 * km * kmToMiles) + 1) / kmToMiles / 2;
             nextHalfKm = (Math.floor(2 * km) + 1) / 2;
-            half = !half
+        }
+
+        function pause() {
+            savedTime = elapsed
         }
     }
 
     ConfigurationValue {
-        id: useMiles
-        key: "/skedaddle/useMiles"
-        defaultValue: false
+        id: distanceUnit
+        key: "/skedaddle/distanceUnit"
+        // values: 0 = "km", 1 = "mi"
+        defaultValue: 0
     }
 
     ConfigurationValue {
@@ -91,6 +99,11 @@ Application {
         onTriggered: updateDisplay()
     }
 
+    NonGraphicalFeedback {
+        id: feedback
+        event: "press"
+    }
+
     function extractUnits(milliseconds) {
         const totalSeconds = Math.floor(milliseconds / 1000);
         const tenths = Math.floor((milliseconds % 1000) / 100);
@@ -101,37 +114,51 @@ Application {
     }
 
     function updateDisplay() {
-        rundata.elapsed = (new Date().getTime() - rundata.startTime) * speedup
+        rundata.elapsed = rundata.savedTime + (new Date().getTime() - rundata.startTime) * speedup
+        const [hours, minutes, seconds, tenths] = extractUnits(Number(rundata.elapsed));
+        var isFullKm = ((Math.floor(rundata.nextHalfKm*10)%10) == 0 ? true : false);
+        var isFullMile = ((Math.floor((rundata.nextHalfMile*rundata.kmToMiles)*10)%10) == 0 ? true : false);
+
         if (speedup > 1) {
             rundata.km += (speedup / 2750)
         }
         if (rundata.km >= rundata.nextHalfMile) {
-            if (useMiles.value) {
-                announcer.speakRunUpdate()
-            }
+            // always update time
             rundata.lastHalfMileTime = Number(rundata.elapsed)
-            /*
-             * This looks wrong but it isn't.
-             * The half value is updated by the call
-             * to speakRunUpdate.
-             */
-            if (rundata.half) {
+            if ( isFullMile ) {
                 rundata.lastFullMileTime = Number(rundata.elapsed)
             }
+
+            // only give feedback if set to miles
+            if (distanceUnit.value && ((announce.value == 2 && isFullMile) || announce.value == 1)) {
+                // haptic feedback
+                if (vibrateAnnounce.value) {
+                    feedback.play()
+                }
+            
+                // acustic feedback
+                    announcer.speakRunUpdate(isFullMile)
+            }
+            rundata.update()
         }
         if (rundata.km >= rundata.nextHalfKm) {
-            if (! useMiles.value) {
-                announcer.speakRunUpdate()
-            }
+            // always update time
             rundata.lastHalfKmTime = Number(rundata.elapsed)
-            /*
-             * This looks wrong but it isn't.
-             * The half value is updated by the call
-             * to speakRunUpdate.
-             */
-            if (rundata.half) {
+            if (isFullKm) {
                 rundata.lastFullKmTime = Number(rundata.elapsed)
             }
+
+            // only give feedback if set to kilometers
+            if (!distanceUnit.value && ((announce.value == 2 && isFullKm) || announce.value == 1)) {
+                // haptic feedback
+                if (vibrateAnnounce.value) {
+                    feedback.play()
+                }
+
+                // acustic feedback
+                    announcer.speakRunUpdate(isFullKm)
+            }
+            rundata.update()
         }
     }
 
@@ -154,13 +181,20 @@ Application {
         bus: DBus.SessionBus
         service: "org.freedesktop.Geoclue.Providers.Hybris"
         path: "/org/freedesktop/Geoclue/Providers/Hybris"
-            iface: "org.freedesktop.Geoclue.Satellite"
-            function update() {
-                call("GetSatellite", undefined, function(timestamp, used, visible) {
+        iface: "org.freedesktop.Geoclue.Satellite"
+        function update() {
+            call("GetSatellite", undefined, function(timestamp, used, visible) {
                 satsused = used
                 satsvisible = visible
                 console.log("used: " + used + " vis: " + visible);
             });
+        }
+    }
+
+    HrmSensor {
+        active: true
+        onReadingChanged: {
+            app.bpm = reading.bpm
         }
     }
 
@@ -179,6 +213,11 @@ Application {
 
     Component {
         id: firstPageComponent
+        StartDisplay {}
+    }
+
+    Component {
+        id: activityLayer
         RunDisplay {}
     }
 

@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.9
+import QtQuick 2.15
 import QtQuick.Layouts 1.3
 import QtPositioning 5.15
 import Nemo.Mce 1.0
@@ -43,99 +43,57 @@ Item {
     }
 
     function formatDistance(kilometers) {
-        var dist = kilometers * (useMiles.value ? rundata.kmToMiles : 1)
-        var distanceUnits = useMiles.value ? 
+        var dist = kilometers * (distanceUnit.value ? rundata.kmToMiles : 1)
+        return `${dist.toFixed(2)}`
+    }
+
+    function getDistanceUnit() {
+        var distanceUnits = distanceUnit.value ? 
             //: Abbreviation for miles
             //% "mi"
-            qsTrId("id-mile-abbrev") : 
+            qsTrId("id-mile-abbrev") :
             //: Abbreviation for kilometers
             //% "km"
             qsTrId("id-km-abbrev")
-        return `${dist.toFixed(2)} ${distanceUnits}`
+        return `${distanceUnits}`
     }
 
     ColumnLayout {
         anchors.fill: parent
         spacing: 10
-        Label {
-            id: distance
+
+        // distance
+        RowLayout {
+            height: parent.height * 0.2
             Layout.topMargin: parent.height * 0.1
             Layout.alignment: Qt.AlignCenter
-            Layout.preferredHeight: parent.height * 0.2
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            font {
-                pixelSize: parent.height * 0.18
-            }
-            text: formatDistance(rundata.km)
-        }
-
-        RowLayout {
-            width: parent.width
-            IconButton {
-                id: startstop
-                iconName: isRunning ? "ios-pause" : "ios-play"
-                onClicked: {
-                    isRunning = !isRunning
-                    if (isRunning) {
-                        rundata.reset()
-                        gpxlog.openGPX()
-                    } else {
-                        gpxlog.closeGPX()
-                    }
+            Label {
+                id: distance
+                Layout.preferredHeight: parent.height
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                font {
+                    pixelSize: parent.height
                 }
-            }
-            GridLayout {
-                columns: 3
-                Label {
-                    //: label for number of satellites visible
-                    //: Note that this must be a short string
-                    //% "sats"
-                    text: qsTrId("id-sats")
-                    Layout.fillWidth: true
-                }
-                Label {
-                    //: label for number of satellites used
-                    //: Note that this must be a short string
-                    //% "used"
-                    text: qsTrId("id-sats-used")
-                    Layout.fillWidth: true
-                }
-                Label {
-                    text: batteryLevel.percent + "%"
-                }
-                Label {
-                    id: satvis
-                    text: satsvisible
-                }
-                Label {
-                    id: satused
-                    text: satsused
-                    color: satsused == 0 ? "lightpink" : satsused > 3 ? "lightgreen" : "lightyellow"
-                }
-                Label {
-                    text: now.toLocaleTimeString("HH:mm:ss")
-                }
-                /*
-                Label {
-                    Layout.columnSpan: 3
-                    text: String(gpxlog.coord).split(",")[0]
-                    color: satused.color
-                }
-                Label {
-                    Layout.columnSpan: 3
-                    text: String(gpxlog.coord).split(",")[1]
-                    color: satused.color
-                }
-                */
+                text: formatDistance(rundata.km)
             }
 
-            IconButton {
-                iconName: "ios-settings"
-                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                onClicked: layerStack.push(configLayer,{})
+            Label {
+                Layout.preferredHeight: parent.height
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignBottom
+                font {
+                    pixelSize: parent.height * 0.4
+                }
+                text: getDistanceUnit()
             }
         }
+
+        DataGrid {
+            Layout.maximumWidth: parent.width * 0.76
+            Layout.alignment: Qt.AlignCenter
+        }
+        
         MceBatteryLevel {
             id: batteryLevel
         }
@@ -152,5 +110,9 @@ Item {
             }
             text: formatMilliseconds(rundata.elapsed);
         }
+    }
+
+    Component.onCompleted: {
+        rightIndicVisible = false
     }
 }

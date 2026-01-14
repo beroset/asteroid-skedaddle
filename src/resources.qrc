@@ -5,5 +5,7 @@
         <file>RunDisplay.qml</file>
         <file>GpxLog.qml</file>
         <file>Announcer.qml</file>
+        <file>StartDisplay.qml</file>
+        <file>DataGrid.qml</file>
     </qresource>
 </RCC>

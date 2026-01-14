@@ -15,47 +15,81 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.9
+import QtQuick 2.15
 import QtQuick.Layouts 1.3
 import org.asteroid.controls 1.0
 
-ColumnLayout {
-    Label {
-        //: Speech settings title
-        //% "Speech"
-        text: qsTrId("id-speech")
-        horizontalAlignment: Text.AlignHCenter
-        Layout.preferredWidth: parent.width
-    }
-    CircularSpinner {
-        Layout.preferredHeight: parent.height * 0.4
-        Layout.preferredWidth: parent.width
-        model: 3
-        delegate:
-        SpinnerDelegate {
-            id: miles
-            text: [ "off", "half ", "" ][index] + (
-index == 0 ? "" : useMiles.value ? "mile" : "kilometer")
+Flickable{
+    id: settingsflick
+    contentHeight: contentcolumn.implicitHeight
+    Column {
+        id: contentcolumn
+        anchors.fill: parent
+        Item {
+            height: parent.width*0.15
+            width: height
         }
-        Component.onCompleted: {
-            currentIndex = announce.value
-        }
-        Component.onDestruction: {
-            announce.value = currentIndex
-        }
-    }
-    LabeledSwitch {
-        Layout.preferredHeight: parent.height * 0.2
-        //: Use miles instead of kilometers as unit
-        //% "Use miles"
-        text: qsTrId("id-use-miles")
-        checked: useMiles.value
-        onCheckedChanged: {
-            if (checked) {
-                useMiles.value = true
-            } else {
-                useMiles.value = false
+        RowLayout {
+            ColumnLayout {
+                Layout.preferredWidth: contentcolumn.width / 2
+                Label {
+                    //: Speech settings title
+                    //% "Speech"
+                    text: "Notification"
+                    horizontalAlignment: Text.AlignHCenter
+                    Layout.preferredWidth: parent.width
+                }
+                CircularSpinner {
+                    Layout.preferredHeight: settingsflick.height*0.35
+                    Layout.preferredWidth: parent.width
+                    Layout.alignment: Qt.AlignCenter
+                    model: 3
+                    delegate: 
+                    SpinnerDelegate {
+                        id: notify
+                        text: [ "off", "half", "full" ][index]
+                    }
+                    Component.onCompleted: {
+                        currentIndex = announce.value
+                    }
+                    Component.onDestruction: {
+                        announce.value = currentIndex
+                    }
+                }
             }
+            ColumnLayout {
+                Layout.preferredWidth: contentcolumn.width / 2
+                Label {
+                    //: Unit settings title
+                    //% "Unit"
+                    text: "Unit"
+                    horizontalAlignment: Text.AlignHCenter
+                    Layout.preferredWidth: parent.width
+                }
+                CircularSpinner {
+                    Layout.preferredHeight: settingsflick.height*0.35
+                    Layout.preferredWidth: parent.width
+                    Layout.alignment: Qt.AlignCenter
+                    model: 2
+                    delegate: 
+                    SpinnerDelegate {
+                        id: unit
+                        text: [ "km", "mi" ][index]
+                    }
+                    Component.onCompleted: {
+                        currentIndex = distanceUnit.value
+
+                    }
+                    Component.onDestruction: {
+                        distanceUnit.value = currentIndex > 1 ? distanceUnit.defaultValue : currentIndex
+                    }
+                }
+            }
+        }
+        Item {
+            id: bottomSpacer
+            height: parent.width*0.15
+            width: height
         }
     }
 }
