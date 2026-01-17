@@ -26,16 +26,7 @@ Item {
     function speak(message) {
         console.log("SAYING:", message)
         console.log("ANNOUNCE VALUE:",announce.value)
-        switch(announce.value) {
-            case 2:  // every whole unit
-                if ( rundata.half ) return;
-            case 1:  // every half unit
-                voce.say(message)
-                break;
-            case 0:  // no announcements
-            default:
-                // say nothing
-        }
+        voce.say(message)
     }
 
     Component.onCompleted: {
@@ -45,15 +36,15 @@ Item {
         voce.setProperties(lang, 2, 3);
     }
 
-    function speakRunUpdate() {
+    function speakRunUpdate(isFullDistance) {
         var mileDistance = Math.floor(2 * rundata.nextHalfMile * rundata.kmToMiles) / 2;
         console.log("distance:",mileDistance,"mi");
         console.log("distance:",rundata.km,"km");
         //: Spoken word for distance
         //% "Distance:"
         var speakmsg = [ qsTrId("id-distance") ]
-        if (rundata.half) {
-            if (useMiles.value) {
+        if (!isFullDistance) {
+            if (distanceUnit.value) {
                 //: fractional distance in miles
                 //% "%1 miles"
                 speakmsg.push(qsTrId("id-frac-miles").arg(Number(mileDistance).toLocaleString(Qt.locale())))
@@ -63,7 +54,7 @@ Item {
                 speakmsg.push(qsTrId("id-frac-distance").arg(Number(rundata.nextHalfKm).toLocaleString(Qt.locale())))
             }
         } else {
-            if (useMiles.value) {
+            if (distanceUnit.value) {
                 //: integer distance in km
                 //% "%n mile(s)"
                 speakmsg.push(qsTrId("id-int-miles", parseInt(mileDistance)))
@@ -95,17 +86,17 @@ Item {
          * Now calculate the pace
          */
         speakmsg.push(";")  // pause between spoken measurements
-        if (rundata.half) {
+        if (!isFullDistance) {
             //: Spoken split pace
             //% "split pace"
             //~ For half km or half mile
             speakmsg.push(qsTrId("id-split-pace"))
-            var [phours, pminutes, pseconds, ptenths] = extractUnits(2 * (rundata.elapsed - (useMiles.value ? rundata.lastHalfMileTime : rundata.lastHalfKmTime)));
+            var [phours, pminutes, pseconds, ptenths] = extractUnits(2 * (rundata.elapsed - (distanceUnit.value ? rundata.lastHalfMileTime : rundata.lastHalfKmTime)));
         } else {
             //: Spoken pace
             //% "pace"
             speakmsg.push(qsTrId("id-pace"))
-            var [phours, pminutes, pseconds, ptenths] = extractUnits(rundata.elapsed - (useMiles.value ? rundata.lastFullMileTime : rundata.lastFullKmTime));
+            var [phours, pminutes, pseconds, ptenths] = extractUnits(rundata.elapsed - (distanceUnit.value ? rundata.lastFullMileTime : rundata.lastFullKmTime));
         }
         if (hours > 0) {
             //: Spoken elapsed hour(s)
@@ -121,6 +112,5 @@ Item {
         //% "%n second(s)"
         speakmsg.push(qsTrId("id-second", parseInt(pseconds)))
         announcer.speak(speakmsg.join(" "));
-        rundata.update()
     }
 }
