@@ -124,10 +124,10 @@
         <extracomment>label for number of satellites visible Note that this must be a short string</extracomment>
         <translation type="unfinished"></translation>
     </message>
-    <message id="id-sats-used">
-        <location filename="../src/RunDisplay.qml" line="100"/>
-        <source>used</source>
-        <extracomment>label for number of satellites used Note that this must be a short string</extracomment>
+    <message id="id-heartrate">
+        <location filename="../src/RunDisplay.qml" line="98"/>
+        <source>bpm</source>
+        <extracomment>Label for hrm bpm</extracomment>
         <translation type="unfinished"></translation>
     </message>
 </context>
