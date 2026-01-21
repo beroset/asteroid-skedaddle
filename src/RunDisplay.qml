@@ -88,17 +88,14 @@ Item {
             GridLayout {
                 columns: 3
                 Label {
-                    //: label for number of satellites visible
+                    //: label for number of satellites available and visible
                     //: Note that this must be a short string
                     //% "sats"
                     text: qsTrId("id-sats")
                     Layout.fillWidth: true
                 }
                 Label {
-                    //: label for number of satellites used
-                    //: Note that this must be a short string
-                    //% "used"
-                    text: qsTrId("id-sats-used")
+                    text: qsTrId("id-heartrate")
                     Layout.fillWidth: true
                 }
                 Label {
@@ -106,12 +103,14 @@ Item {
                 }
                 Label {
                     id: satvis
-                    text: satsvisible
+                    text: satsused + "/" + satsvisible
+                    color: satsused == 0 ? "lightpink" : satsused > 3 ? "lightgreen" : "lightyellow"
+                    Layout.fillWidth: true
                 }
                 Label {
-                    id: satused
-                    text: satsused
-                    color: satsused == 0 ? "lightpink" : satsused > 3 ? "lightgreen" : "lightyellow"
+                    text: app.bpm
+                    Layout.fillWidth: true
+                    
                 }
                 Label {
                     text: now.toLocaleTimeString("HH:mm:ss")
