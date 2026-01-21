@@ -18,6 +18,7 @@
 import QtQuick 2.15
 import QtQuick.Layouts 1.3
 import QtPositioning 5.15
+import QtSensors 5.11
 import Nemo.Configuration 1.0
 import Nemo.KeepAlive 1.1
 import Nemo.DBus 2.0
@@ -34,6 +35,7 @@ Application {
     property int satsvisible: 0
     property int satsused: 0
     property date now: new Date()
+    property int bpm: 0
 
     Item {
         id: rundata
@@ -175,6 +177,13 @@ Application {
 
     Announcer {
         id: announcer
+    }
+
+    HrmSensor {
+        active: true
+        onReadingChanged: {
+            app.bpm = reading.bpm
+        }
     }
 
     Component {
