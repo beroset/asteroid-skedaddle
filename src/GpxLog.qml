@@ -29,8 +29,8 @@ Item {
     function logGPXsegment() {
         var loc = coord
         var currentTime = new Date
-        var trkpt = '   <trkpt lat="%1" lon="%2">\n    <ele>%3</ele>\n    <sat>%4</sat>\n    <time>%5</time>\n   </trkpt>\n'
-        text += trkpt.arg(loc.latitude.toFixed(7)).arg(loc.longitude.toFixed(7)).arg(loc.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString())
+        var trkpt = '   <trkpt lat="%1" lon="%2">\n    <ele>%3</ele>\n    <sat>%4</sat>\n    <time>%5</time>\n     <extensions>\n      <gpxtpx:TrackPointExtension>\n       <gpxtpx:hr>%6</gpxtpx:hr>\n      </gpxtpx:TrackPointExtension>\n    </extensions>\n   </trkpt>\n'
+        text += trkpt.arg(loc.latitude.toFixed(7)).arg(loc.longitude.toFixed(7)).arg(loc.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString()).arg(bpm)
         // console.log(trkpt.arg(loc.latitude.toFixed(7)).arg(loc.longitude.toFixed(7)).arg(loc.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString()))
         if (prevcoord && prevcoord.isValid) {
             var delta = prevcoord.distanceTo(loc)
@@ -40,7 +40,7 @@ Item {
     }
 
     function openGPX() {
-        var header = '<?xml version="1.0" encoding="UTF-8"?>\n<gpx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" creator="AsteroidGPX" version="1.1" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata>\n<time>%1</time>\n</metadata>\n'
+        var header = '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="AsteroidGPX" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1">\n<metadata>\n<time>%1</time>\n</metadata>\n'
         var trkopen = ' <trk>\n<name>Run</name>\n<type>running</type>\n  <trkseg>\n'
         var currentTime = new Date
         text = header.arg(currentTime.toISOString())
