@@ -16,7 +16,7 @@ include(ECMFindQmlModule)
 include(AsteroidCMakeSettings)
 include(AsteroidTranslations)
 
-find_package(Qt5 COMPONENTS Core Qml Quick REQUIRED)
+find_package(Qt5 COMPONENTS Core Qml Quick Location Positioning REQUIRED)
 
 build_translations(i18n)
 generate_desktop(${CMAKE_SOURCE_DIR} ${CMAKE_PROJECT_NAME})

@@ -18,6 +18,7 @@
 #include <asteroidapp.h>
 #include "Voice.h"
 #include "FileHelper.h"
+#include "SatelliteSourceBridge.h"
 
 int main(int argc, char *argv[])
 {
@@ -26,6 +27,7 @@ int main(int argc, char *argv[])
         [](QQmlEngine *, QJSEngine *) -> QObject * {
             return FileHelper::instance();
         });
+qmlRegisterType<SatelliteSourceBridge>("org.asteroid.Positioning", 1, 0, "SatelliteInfo");
 
     return AsteroidApp::main(argc, argv);
 }

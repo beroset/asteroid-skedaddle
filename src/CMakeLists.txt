@@ -1,6 +1,9 @@
-add_executable(${CMAKE_PROJECT_NAME} main.cpp resources.qrc Voice.cpp FileHelper.cpp)
+add_executable(${CMAKE_PROJECT_NAME} main.cpp resources.qrc Voice.cpp FileHelper.cpp SatelliteSourceBridge.cpp)
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
+        Qt5::Location
+        Qt5::Positioning
+    PRIVATE
 	AsteroidApp
         espeak)
 

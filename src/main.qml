@@ -23,6 +23,7 @@ import Nemo.Configuration 1.0
 import Nemo.KeepAlive 1.1
 import Nemo.DBus 2.0
 import org.asteroid.controls 1.0
+import org.asteroid.Positioning 1.0
 
 Application {
     id: app
@@ -144,25 +145,18 @@ Application {
         triggeredOnStart: true
         onTriggered: {
             now = new Date()
-            locationDBus.update()
             if (isRunning) {
                 gpxlog.logGPXsegment()
             }
         }
     }
 
-    DBusInterface {
-        id: locationDBus
-        bus: DBus.SessionBus
-        service: "org.freedesktop.Geoclue.Providers.Hybris"
-        path: "/org/freedesktop/Geoclue/Providers/Hybris"
-            iface: "org.freedesktop.Geoclue.Satellite"
-            function update() {
-                call("GetSatellite", undefined, function(timestamp, used, visible) {
-                satsused = used
-                satsvisible = visible
-                console.log("used: " + used + " vis: " + visible);
-            });
+    SatelliteInfo {
+        id: satInfo
+        onSatellitesChanged: {
+            satsused = satellitesInUse
+            satsvisible = satellitesInView
+            console.log("used: " + satsused + " vis: " + satsvisible);
         }
     }
 
