@@ -11,6 +11,7 @@ In English "skedaddle" is verb meaning "to run off hastily."  `asteroid-skedaddl
 
  * Preserves your privacy - no data is uploaded anywhere, ever.  Your data is yours.
  * Logs the exercise in [GPX format](https://www.topografix.com/gpx.asp)
+ * Measures, displays and stores heartrate
  * Uses satellite global positioning on the watch for location
  * Shows number of satellites and currently used satellites for positioning
  * Shows total distance and elapsed time during your exercise
