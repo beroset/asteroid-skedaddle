@@ -29,7 +29,7 @@ Item {
     function logGPXsegment() {
         var loc = coord
         var currentTime = new Date
-        var trkpt = '   <trkpt lat="%1" lon="%2">\n    <ele>%3</ele>\n    <sat>%4</sat>\n    <time>%5</time>\n     <extensions>\n      <gpxtpx:TrackPointExtension>\n       <gpxtpx:hr>%6</gpxtpx:hr>\n      </gpxtpx:TrackPointExtension>\n    </extensions>\n   </trkpt>\n'
+        var trkpt = '   <trkpt lat="%1" lon="%2">\n    <ele>%3</ele>\n    <time>%5</time>\n     <sat>%4</sat>\n    <extensions>\n      <gpxtpx:TrackPointExtension>\n       <gpxtpx:hr>%6</gpxtpx:hr>\n      </gpxtpx:TrackPointExtension>\n    </extensions>\n   </trkpt>\n'
         text += trkpt.arg(loc.latitude.toFixed(7)).arg(loc.longitude.toFixed(7)).arg(loc.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString()).arg(bpm)
         // console.log(trkpt.arg(loc.latitude.toFixed(7)).arg(loc.longitude.toFixed(7)).arg(loc.altitude.toFixed(1)).arg(satsused).arg(currentTime.toISOString()))
         if (prevcoord && prevcoord.isValid) {
