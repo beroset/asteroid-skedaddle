@@ -156,12 +156,12 @@ Application {
         bus: DBus.SessionBus
         service: "org.freedesktop.Geoclue.Providers.Hybris"
         path: "/org/freedesktop/Geoclue/Providers/Hybris"
-            iface: "org.freedesktop.Geoclue.Satellite"
-            function update() {
-                call("GetSatellite", undefined, function(timestamp, used, visible) {
-                satsused = used
-                satsvisible = visible
-                console.log("used: " + used + " vis: " + visible);
+        iface: "org.freedesktop.Geoclue.Satellite"
+        function update() {
+        call("GetSatellite", undefined, function(timestamp, used, visible) {
+            satsused = used
+            satsvisible = visible
+            console.log("used: " + used + " vis: " + visible);
             });
         }
     }
