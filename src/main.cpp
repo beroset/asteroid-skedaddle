@@ -17,14 +17,14 @@
 
 #include <asteroidapp.h>
 #include "Voice.h"
-#include "FileHelper.h"
+#include "GpxLog.h"
 
 int main(int argc, char *argv[])
 {
     qmlRegisterType<Voice>("org.asteroid.voice", 1, 0, "Voice");
-    qmlRegisterSingletonType<FileHelper>("org.asteroid.filehelper", 1, 0, "FileHelper",
+    qmlRegisterSingletonType<GpxLog>("org.asteroid.gpxlog", 1, 0, "GpxLog",
         [](QQmlEngine *, QJSEngine *) -> QObject * {
-            return FileHelper::instance();
+            return GpxLog::instance();
         });
 
     return AsteroidApp::main(argc, argv);
