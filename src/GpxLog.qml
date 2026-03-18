@@ -17,7 +17,6 @@
 
 import QtQuick 2.15
 import QtQuick.Layouts 1.3
-import QtPositioning 5.15
 import org.asteroid.controls 1.0
 import org.asteroid.filehelper 1.0
 
@@ -53,19 +52,5 @@ Item {
         text += trkclose
         var filename = "/home/ceres/runlog%1.gpx".arg(currentTime.toISOString())
         FileHelper.writeFile(filename, text)
-        satellite.active = false
-    }
-
-    PositionSource {
-        id: satellite
-        active: true
-        updateInterval: 1000
-        preferredPositioningMethods: PositionSource.SatellitePositioningMethods
-        onPositionChanged: {
-            var position = satellite.position;
-            coord = position.coordinate;
-            console.log("Coordinate:", coord.longitude, coord.latitude, coord.altitude);
-            console.log("Validity:", position.longitudeValid, position.latitudeValid, position.altitudeValid);
-        }
     }
 }
