@@ -23,6 +23,7 @@ import Nemo.Configuration 1.0
 import Nemo.KeepAlive 1.1
 import Nemo.DBus 2.0
 import org.asteroid.controls 1.0
+import org.asteroid.gpxlog 1.0
 
 Application {
     id: app
@@ -36,6 +37,26 @@ Application {
     property int satsused: 0
     property date now: new Date()
     property int bpm: 0
+    Item {
+        id: current_location
+        property real latitude: 0
+        property real longitude: 0
+        property real altitude: 0
+        property bool isValid: false
+        function coordinate() {
+            return QtPositioning.coordinate(latitude, longitude, altitude);
+        }
+    }
+    Item {
+        id: previous_location
+        property real latitude: 0
+        property real longitude: 0
+        property real altitude: 0
+        property bool isValid: false
+        function coordinate() {
+            return QtPositioning.coordinate(latitude, longitude, altitude);
+        }
+    }
 
     Item {
         id: rundata
@@ -137,6 +158,21 @@ Application {
         }
     }
 
+    PositionSource {
+        id: satellite
+        active: true
+        updateInterval: 1000
+        preferredPositioningMethods: PositionSource.SatellitePositioningMethods
+        onPositionChanged: {
+            var here = satellite.position.coordinate;
+            current_location.latitude = here.latitude
+            current_location.longitude = here.longitude
+            current_location.altitude = here.altitude
+            current_location.isValid = here.isValid
+            console.log("Coordinate:", current_location.longitude, current_location.latitude, current_location.altitude);
+        }
+    }
+
     Timer {
         interval: 1000
         repeat: true
@@ -146,7 +182,27 @@ Application {
             now = new Date()
             locationDBus.update()
             if (isRunning) {
-                gpxlog.logGPXsegment()
+                var here = satellite.position.coordinate;
+                current_location.latitude = here.latitude
+                current_location.longitude = here.longitude
+                current_location.altitude = here.altitude
+                current_location.isValid = here.isValid
+                GpxLog.logGPXsegment(
+                    now.toISOString(),
+                    current_location.latitude,
+                    current_location.longitude,
+                    current_location.altitude,
+                    app.satsused,
+                    app.bpm
+                );
+                if (previous_location.isValid) {
+                    var delta = previous_location.coordinate().distanceTo(current_location.coordinate());
+                    rundata.km += (delta / 1000)
+                }
+                previous_location.latitude = current_location.latitude
+                previous_location.longitude = current_location.longitude
+                previous_location.altitude = current_location.altitude
+                previous_location.isValid = current_location.isValid
             }
         }
     }
@@ -169,10 +225,6 @@ Application {
     LayerStack {
         id: layerStack
         firstPage: firstPageComponent
-    }
-
-    GpxLog {
-        id: gpxlog
     }
 
     Announcer {
