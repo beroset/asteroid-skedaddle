@@ -17,9 +17,9 @@
 
 import QtQuick 2.15
 import QtQuick.Layouts 1.3
-import QtPositioning 5.15
 import Nemo.Mce 1.0
 import org.asteroid.controls 1.0
+import org.asteroid.gpxlog 1.0
 
 Item {
 
@@ -79,9 +79,10 @@ Item {
                     isRunning = !isRunning
                     if (isRunning) {
                         rundata.reset()
-                        gpxlog.openGPX()
+                        var currentTime = new Date
+                        GpxLog.open(currentTime.toISOString())
                     } else {
-                        gpxlog.closeGPX()
+                        GpxLog.close()
                         satellite.active = false
                     }
                 }
@@ -116,18 +117,6 @@ Item {
                 Label {
                     text: now.toLocaleTimeString("HH:mm:ss")
                 }
-                /*
-                Label {
-                    Layout.columnSpan: 3
-                    text: String(gpxlog.coord).split(",")[0]
-                    color: satused.color
-                }
-                Label {
-                    Layout.columnSpan: 3
-                    text: String(gpxlog.coord).split(",")[1]
-                    color: satused.color
-                }
-                */
             }
 
             IconButton {
@@ -151,19 +140,6 @@ Item {
                 pixelSize: parent.height * 0.18
             }
             text: formatMilliseconds(rundata.elapsed);
-        }
-    }
-
-    PositionSource {
-        id: satellite
-        active: true
-        updateInterval: 1000
-        preferredPositioningMethods: PositionSource.SatellitePositioningMethods
-        onPositionChanged: {
-            var position = satellite.position;
-            coord = position.coordinate;
-            console.log("Coordinate:", coord.longitude, coord.latitude, coord.altitude);
-            console.log("Validity:", position.longitudeValid, position.latitudeValid, position.altitudeValid);
         }
     }
 }
