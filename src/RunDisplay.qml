@@ -82,6 +82,7 @@ Item {
                         gpxlog.openGPX()
                     } else {
                         gpxlog.closeGPX()
+                        satellite.active = false
                     }
                 }
             }
@@ -150,6 +151,19 @@ Item {
                 pixelSize: parent.height * 0.18
             }
             text: formatMilliseconds(rundata.elapsed);
+        }
+    }
+
+    PositionSource {
+        id: satellite
+        active: true
+        updateInterval: 1000
+        preferredPositioningMethods: PositionSource.SatellitePositioningMethods
+        onPositionChanged: {
+            var position = satellite.position;
+            coord = position.coordinate;
+            console.log("Coordinate:", coord.longitude, coord.latitude, coord.altitude);
+            console.log("Validity:", position.longitudeValid, position.latitudeValid, position.altitudeValid);
         }
     }
 }
