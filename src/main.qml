@@ -35,6 +35,14 @@ Application {
     property double speedup: 1.0
     property int satsvisible: 0
     property int satsused: 0
+    /* number of seconds in a row that triggers a voice announcement
+     */
+    readonly property int satthreshold: 3
+    /* count number of seconds that a non-zero satused was reported
+     * This is useful for creating a voice announcement that satellites
+     * have been acquired.  Pegs at satthreshold + 1
+     */
+    property int usedcount: 0
     property date now: new Date()
     property int bpm: 0
     Item {
@@ -217,6 +225,18 @@ Application {
         call("GetSatellite", undefined, function(timestamp, used, visible) {
             satsused = used
             satsvisible = visible
+            if (used > 0) {
+                ++usedcount;
+                if (usedcount == satthreshold) {
+                    //: Voice message to alert that satellites are acquired
+                    //% "satellites acquired"
+                    announcer.speak(qsTrId("id-sats-acquired"));
+                } else if (usedcount > satthreshold) {
+                    usedcount = satthreshold + 1;
+                }
+            } else {
+                usedcount = 0;
+            }
             console.log("used: " + used + " vis: " + visible);
             });
         }
