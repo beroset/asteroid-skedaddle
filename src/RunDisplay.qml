@@ -22,12 +22,9 @@ import org.asteroid.controls 1.0
 import org.asteroid.gpxlog 1.0
 
 Item {
-
     function formatMilliseconds(milliseconds) {
         const [hours, minutes, seconds, tenths] = extractUnits(milliseconds);
-
         const parts = [];
-
         if (hours > 0) {
             parts.push(hours.toString());
             parts.push(minutes.toString().padStart(2, '0'));
@@ -38,10 +35,8 @@ Item {
         } else {
             parts.push(seconds.toString() + "." + tenths);
         }
-
         return parts.join(':');
     }
-
     function formatDistance(kilometers) {
         var dist = kilometers * (useMiles.value ? rundata.kmToMiles : 1)
         var distanceUnits = useMiles.value ? 
@@ -53,7 +48,9 @@ Item {
             qsTrId("id-km-abbrev")
         return `${dist.toFixed(2)} ${distanceUnits}`
     }
-
+    MceBatteryLevel {
+        id: batteryLevel
+    }
     ColumnLayout {
         anchors.fill: parent
         spacing: 10
@@ -69,7 +66,6 @@ Item {
             }
             text: formatDistance(rundata.km)
         }
-
         RowLayout {
             width: parent.width
             IconButton {
@@ -112,7 +108,6 @@ Item {
                 Label {
                     text: app.bpm
                     Layout.fillWidth: true
-                    
                 }
                 Label {
                     text: now.toLocaleTimeString("HH:mm:ss")
@@ -125,10 +120,6 @@ Item {
                 onClicked: layerStack.push(configLayer,{})
             }
         }
-        MceBatteryLevel {
-            id: batteryLevel
-        }
-
         Label {
             id: time
             Layout.bottomMargin: parent.height * 0.1
