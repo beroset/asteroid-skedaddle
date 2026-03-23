@@ -107,28 +107,35 @@
         <translation>Application de suivi de course à pied</translation>
     </message>
     <message id="id-mile-abbrev">
-        <location filename="../src/RunDisplay.qml" line="49"/>
+        <location filename="../src/RunDisplay.qml" line="45"/>
         <source>mi</source>
         <extracomment>Abbreviation for miles</extracomment>
         <translation>mi</translation>
     </message>
     <message id="id-km-abbrev">
-        <location filename="../src/RunDisplay.qml" line="52"/>
+        <location filename="../src/RunDisplay.qml" line="48"/>
         <source>km</source>
         <extracomment>Abbreviation for kilometers</extracomment>
         <translation>km</translation>
     </message>
     <message id="id-sats">
-        <location filename="../src/RunDisplay.qml" line="93"/>
+        <location filename="../src/RunDisplay.qml" line="92"/>
         <source>sats</source>
-        <extracomment>label for number of satellites visible Note that this must be a short string</extracomment>
+        <extracomment>label for number of satellites available and visible Note that this must be a short string</extracomment>
         <translation>sats</translation>
     </message>
     <message id="id-heartrate">
-        <location filename="../src/RunDisplay.qml" line="98"/>
+        <location filename="../src/RunDisplay.qml" line="99"/>
         <source>bpm</source>
-        <extracomment>Label for hrm bpm</extracomment>
-        <translation type="unfinished"></translation>
+        <extracomment>label for heartrate beats per minute Note that this must be a short string</extracomment>
+        <translatorcomment>battements par minute</translatorcomment>
+        <translation>bpm</translation>
+    </message>
+    <message id="id-sats-acquired">
+        <location filename="../src/main.qml" line="233"/>
+        <source>satellites acquired</source>
+        <extracomment>Voice message to alert that satellites are acquired</extracomment>
+        <translation>Satellites acquis</translation>
     </message>
 </context>
 </TS>

@@ -93,6 +93,9 @@ Item {
                     Layout.fillWidth: true
                 }
                 Label {
+                    //: label for heartrate beats per minute
+                    //: Note that this must be a short string
+                    //% "bpm"
                     text: qsTrId("id-heartrate")
                     Layout.fillWidth: true
                 }
