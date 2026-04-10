@@ -79,7 +79,6 @@ Item {
                         GpxLog.open(currentTime.toISOString())
                     } else {
                         GpxLog.close()
-                        satellite.active = false
                     }
                 }
             }
