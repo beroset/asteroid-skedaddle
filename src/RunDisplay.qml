@@ -76,6 +76,7 @@ Item {
                     if (isRunning) {
                         rundata.reset()
                         var currentTime = new Date
+                        satellite.active = true
                         GpxLog.open(currentTime.toISOString())
                     } else {
                         GpxLog.close()
