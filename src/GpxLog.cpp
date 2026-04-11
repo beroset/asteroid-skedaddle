@@ -20,12 +20,24 @@
 #include <string_view>
 #include <string>
 #include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QIODevice>
+#include <QDateTime>
 #include "GpxLog.h"
 
 Q_INVOKABLE bool GpxLog::open(const QString& datetime) 
 {
+    const QString dirPath = "/home/ceres/runlogs";
+    if (!QDir(dirPath).exists()) {
+        if (!QDir().mkdir(dirPath)) {
+            qDebug() << "Failed to create directory";
+        }
+    }
+    std::string timestamp{QDateTime::fromString(datetime, Qt::ISODate).toLocalTime().toString("yyyy-MM-dd_HH-mm-ss").toStdString()};
     std::string now{datetime.toStdString()};
-    const std::string filepath{std::format("/home/ceres/runlog{}.gpx", now)};
+    filepath = std::format("/home/ceres/runlogs/runlog_{}.gpx", timestamp);
+    filepathwp = std::format("/home/ceres/runlogs/waypoints_{}.gpx", timestamp);
     static constexpr std::string_view header{R"(<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="AsteroidGPX" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1">
   <metadata>
@@ -38,12 +50,17 @@ Q_INVOKABLE bool GpxLog::open(const QString& datetime)
     <trkseg>
 )"};
     out.open(filepath);
-    if (out.is_open()) {
-        out << header << now << trkopen;
-        return true;
+    if (!out.is_open()) {
+        qDebug() << "Writing file \"" << QString::fromStdString(filepath) << "\" FAILED";
+        return false;
     }
-    qDebug() << "Writing file \"" << QString::fromStdString(filepath) << "\" FAILED";
-    return false;
+    outwp.open(filepathwp);
+    if (!outwp.is_open()) {
+        qDebug() << "Writing file \"" << QString::fromStdString(filepathwp) << "\" FAILED";
+        return false;
+    }
+    out << header << now << trkopen;
+    return true;
 }
 
 Q_INVOKABLE bool GpxLog::logGPXsegment(const QString& datetime, double latitude, double longitude, double altitude, int satellites, int heartrate)
@@ -54,8 +71,7 @@ Q_INVOKABLE bool GpxLog::logGPXsegment(const QString& datetime, double latitude,
     }
     const std::string now{datetime.toStdString()};
 
-out 
-    << format(R"(      <trkpt lat="{:.5f}" lon="{:.5f}">
+out << format(R"(      <trkpt lat="{:.5f}" lon="{:.5f}">
         <ele>{:.1f}</ele>
         <time>{}</time>
         <sat>{}</sat>
@@ -71,13 +87,55 @@ out
     return true;
 }
 
+Q_INVOKABLE bool GpxLog::logGPXwaypoint(const QString& datetime, double latitude, double longitude, double altitude, int satellites)
+{
+    const std::string now{datetime.toStdString()};
+
+outwp << format(R"(  <wpt lat="{:.5f}" lon="{:.5f}">
+    <ele>{:.1f}</ele>
+    <time>{}</time>
+    <sat>{}</sat>
+  </wpt>
+)", latitude, longitude, 
+    altitude, now, satellites);
+    return true;
+}
+
 Q_INVOKABLE bool GpxLog::close()
 {
-    if (out.is_open()) {
-        out << "    </trkseg>\n  </trk>\n</gpx>\n";
-        out.close();
-        return true;
-    } 
-    qDebug() << "ERROR: Closing file that is already closed";
-    return false;
+    if (!out.is_open() || !outwp.is_open()) {
+        qDebug() << "ERROR: Closing file that is already closed";
+        return false;
+    }
+
+    out << "    </trkseg>\n  </trk>\n</gpx>\n";
+    out.close();
+    outwp.close();
+
+    // inject waypoints to GPX runlog, delete waypoints file after
+    QFile ftrk(QString::fromStdString(filepath));
+    if (!ftrk.open(QFile::ReadOnly | QFile::Text)) {
+        qDebug() << "ERROR: Could not open track file";
+        return false;
+    }
+    QFile fwpt(QString::fromStdString(filepathwp));
+    if (!fwpt.open(QFile::ReadOnly | QFile::Text)) {
+        qDebug() << "ERROR: Could not open waypoint file";
+        return false;
+    }
+    QString strtrk = ftrk.readAll();
+    QString strwpt = fwpt.readAll();
+    ftrk.close();
+    fwpt.close();
+    strtrk.replace("  <trk>", strwpt + "  <trk>");
+    if(!ftrk.open(QIODevice::WriteOnly)) {
+        qDebug() << "ERROR: Could not open track file for writing";
+        return false;
+    } else {
+        ftrk.write(strtrk.toUtf8());
+        ftrk.close();
+    }
+    QFile::remove(QString::fromStdString(filepathwp));
+
+    return true;
 }

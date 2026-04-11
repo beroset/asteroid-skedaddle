@@ -29,6 +29,7 @@ public:
         return &instance;
     }
     Q_INVOKABLE bool logGPXsegment(const QString& datetime, double latitude, double longitude, double altitude, int satellites, int heartrate);
+    Q_INVOKABLE bool logGPXwaypoint(const QString& datetime, double latitude, double longitude, double altitude, int satellites);
     Q_INVOKABLE bool open(const QString& datetime);
     Q_INVOKABLE bool close();
 private:
@@ -37,5 +38,8 @@ private:
     GpxLog(const GpxLog&) = delete;
     GpxLog &operator=(const GpxLog&) = delete;
     std::ofstream out;
+    std::ofstream outwp;
+    std::string filepath;
+    std::string filepathwp;
 };
 #endif // GPXLOG_H

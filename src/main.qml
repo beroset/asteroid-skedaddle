@@ -168,7 +168,7 @@ Application {
 
     PositionSource {
         id: satellite
-        active: true
+        active: false
         updateInterval: 1000
         preferredPositioningMethods: PositionSource.SatellitePositioningMethods
         onPositionChanged: {
