@@ -71,11 +71,26 @@ out
     return true;
 }
 
+Q_INVOKABLE bool GpxLog::logGPXwaypoint(const QString& datetime, double latitude, double longitude, double altitude, int satellites)
+{
+    const std::string now{datetime.toStdString()};
+
+waypoints += format(R"(  <wpt lat="{:.5f}" lon="{:.5f}">
+    <ele>{:.1f}</ele>
+    <time>{}</time>
+    <sat>{}</sat>
+  </wpt>
+)", latitude, longitude, 
+    altitude, now, satellites);
+    return true;
+}
+
 Q_INVOKABLE bool GpxLog::close()
 {
     if (out.is_open()) {
-        out << "    </trkseg>\n  </trk>\n</gpx>\n";
+        out << "    </trkseg>\n  </trk>\n" << waypoints << "</gpx>\n";
         out.close();
+        waypoints = "";
         return true;
     } 
     qDebug() << "ERROR: Closing file that is already closed";

@@ -51,18 +51,25 @@ Item {
     MceBatteryLevel {
         id: batteryLevel
     }
+    Timer {
+        id: whiteflag
+        interval: 2000
+        repeat: false
+        running: false
+        onTriggered: waypoint.iconColor = "white"
+    }
     ColumnLayout {
         anchors.fill: parent
         spacing: 10
         Label {
             id: distance
-            Layout.topMargin: parent.height * 0.1
+            Layout.topMargin: parent.height * 0.15
             Layout.alignment: Qt.AlignCenter
-            Layout.preferredHeight: parent.height * 0.2
+            Layout.preferredHeight: parent.height * 0.17
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             font {
-                pixelSize: parent.height * 0.18
+                pixelSize: parent.height * 0.15
             }
             text: formatDistance(rundata.km)
         }
@@ -124,15 +131,35 @@ Item {
         }
         Label {
             id: time
-            Layout.bottomMargin: parent.height * 0.1
             Layout.alignment: Qt.AlignCenter
-            Layout.preferredHeight: parent.height * 0.2
+            Layout.preferredHeight: parent.height * 0.17
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             font {
-                pixelSize: parent.height * 0.18
+                pixelSize: parent.height * 0.15
             }
             text: formatMilliseconds(rundata.elapsed);
+        }
+        IconButton {
+            id: waypoint
+            iconName: "ios-flag"
+            Layout.alignment: Qt.AlignCenter
+            Layout.topMargin: parent.height * 0.03
+            Layout.preferredHeight: parent.height * 0.15
+            onClicked: {
+                if (isRunning) {
+                    waypoint.iconColor = "lightgreen"
+                    var currentTime = new Date
+                    GpxLog.logGPXwaypoint(
+                        currentTime.toISOString(),
+                        current_location.latitude,
+                        current_location.longitude,
+                        current_location.altitude,
+                        app.satsused
+                    );
+                    whiteflag.start()
+                }
+            }
         }
     }
 }
