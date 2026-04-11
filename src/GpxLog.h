@@ -38,6 +38,8 @@ private:
     GpxLog(const GpxLog&) = delete;
     GpxLog &operator=(const GpxLog&) = delete;
     std::ofstream out;
-    std::string waypoints;
+    std::ofstream outwp;
+    std::string filepath;
+    std::string filepathwp;
 };
 #endif // GPXLOG_H
