@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Ed Beroset <beroset@ieee.org>
+ * Copyright (C) 2025-2026 Ed Beroset <beroset@ieee.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,15 +15,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.15
-import QtQuick.Layouts 1.3
-import QtPositioning 5.15
-import QtSensors 5.11
-import Nemo.Configuration 1.0
-import Nemo.KeepAlive 1.1
-import Nemo.DBus 2.0
-import org.asteroid.controls 1.0
-import org.asteroid.gpxlog 1.0
+import QtQuick
+import QtQuick.Layouts
+import QtPositioning
+import QtSensors
+import Nemo.Configuration
+import Nemo.KeepAlive
+import Nemo.DBus
+import org.asteroid.controls
+import org.asteroid.gpxlog
 
 Application {
     id: app
