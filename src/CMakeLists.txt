@@ -1,10 +1,26 @@
-add_executable(${CMAKE_PROJECT_NAME} main.cpp resources.qrc Voice.cpp GpxLog.cpp)
+add_executable(
+    ${CMAKE_PROJECT_NAME}
+    main.cpp
+    resources.qrc
+    Voice.cpp
+    GpxLog.cpp
+)
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
+target_link_libraries(
+    ${CMAKE_PROJECT_NAME}
+    PRIVATE
 	Asteroid::AsteroidApp6
-        espeak)
+        espeak
+)
 
-target_compile_features(${CMAKE_PROJECT_NAME} PUBLIC cxx_std_20)
+target_compile_features(
+    ${CMAKE_PROJECT_NAME}
+    PUBLIC
+        cxx_std_20)
 
-install(TARGETS ${CMAKE_PROJECT_NAME}
-	DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(
+    TARGETS
+        ${CMAKE_PROJECT_NAME}
+    DESTINATION
+        ${CMAKE_INSTALL_BINDIR}
+)
