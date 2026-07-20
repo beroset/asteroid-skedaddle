@@ -21,7 +21,6 @@ import QtPositioning
 import QtSensors
 import Nemo.Configuration
 import Nemo.KeepAlive
-import Nemo.DBus
 import org.asteroid.controls
 import org.asteroid.gpxlog
 
@@ -166,13 +165,39 @@ Application {
         }
     }
 
+    SatelliteSource {
+        id: sat_source
+        active: true
+        updateInterval: 1000
+        onSatellitesInUseChanged: {
+            app.satsused = sat_source.satellitesInUse.length;
+            if (app.satsused > 0) {
+                ++app.usedcount;
+                if (app.usedcount == app.satthreshold) {
+                    //: Voice message to alert that satellites are acquired
+                    //% "satellites acquired"
+                    announcer.speak(qsTrId("id-sats-acquired"));
+                } else if (app.usedcount > app.satthreshold) {
+                    app.usedcount = app.satthreshold + 1;
+                }
+            } else {
+                app.usedcount = 0;
+            }
+            console.log("used: " + app.satsused + " vis: " + app.satsvisible);
+        }
+        onSatellitesInViewChanged: {
+            app.satsvisible = sat_source.satellitesInView.length;
+            console.log("used: " + app.satsused + " vis: " + app.satsvisible);
+        }
+    }
+
     PositionSource {
-        id: satellite
+        id: pos_source
         active: true
         updateInterval: 1000
         preferredPositioningMethods: PositionSource.SatellitePositioningMethods
         onPositionChanged: {
-            var here = satellite.position.coordinate;
+            var here = pos_source.position.coordinate;
             current_location.latitude = here.latitude
             current_location.longitude = here.longitude
             current_location.altitude = here.altitude
@@ -188,9 +213,8 @@ Application {
         triggeredOnStart: true
         onTriggered: {
             now = new Date()
-            locationDBus.update()
             if (isRunning) {
-                var here = satellite.position.coordinate;
+                var here = pos_source.position.coordinate;
                 current_location.latitude = here.latitude
                 current_location.longitude = here.longitude
                 current_location.altitude = here.altitude
@@ -212,33 +236,6 @@ Application {
                 previous_location.altitude = current_location.altitude
                 previous_location.isValid = current_location.isValid
             }
-        }
-    }
-
-    DBusInterface {
-        id: locationDBus
-        bus: DBus.SessionBus
-        service: "org.freedesktop.Geoclue.Providers.Hybris"
-        path: "/org/freedesktop/Geoclue/Providers/Hybris"
-        iface: "org.freedesktop.Geoclue.Satellite"
-        function update() {
-        call("GetSatellite", undefined, function(timestamp, used, visible) {
-            satsused = used
-            satsvisible = visible
-            if (used > 0) {
-                ++usedcount;
-                if (usedcount == satthreshold) {
-                    //: Voice message to alert that satellites are acquired
-                    //% "satellites acquired"
-                    announcer.speak(qsTrId("id-sats-acquired"));
-                } else if (usedcount > satthreshold) {
-                    usedcount = satthreshold + 1;
-                }
-            } else {
-                usedcount = 0;
-            }
-            console.log("used: " + used + " vis: " + visible);
-            });
         }
     }
 
@@ -267,7 +264,6 @@ Application {
         id: configLayer;
         Settings {}
     }
-    Component.onCompleted: {
-        DisplayBlanking.preventBlanking = true
-    }
+
+    DisplayBlanking { preventBlanking: true }
 }
