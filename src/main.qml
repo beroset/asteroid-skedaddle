@@ -171,6 +171,7 @@ Application {
         updateInterval: 1000
         onSatellitesInUseChanged: {
             app.satsused = sat_source.satellitesInUse.length;
+            app.satsvisible = sat_source.satellitesInView.length;
             if (app.satsused > 0) {
                 ++app.usedcount;
                 if (app.usedcount == app.satthreshold) {
@@ -183,10 +184,6 @@ Application {
             } else {
                 app.usedcount = 0;
             }
-            console.log("used: " + app.satsused + " vis: " + app.satsvisible);
-        }
-        onSatellitesInViewChanged: {
-            app.satsvisible = sat_source.satellitesInView.length;
             console.log("used: " + app.satsused + " vis: " + app.satsvisible);
         }
     }
